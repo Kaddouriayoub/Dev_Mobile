@@ -27,8 +27,8 @@
         android:background="@color/white"
         app:elevation="0dp"
         app:itemIconSize="26dp"
-        app:itemIconTint="@color/nav_item_color"
-        app:itemTextColor="@color/nav_item_color"
+        app:itemIconTint="@color/black"
+        app:itemTextColor="@color/black"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
 
