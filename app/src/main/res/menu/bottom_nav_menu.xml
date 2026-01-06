@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="Accueil" />
+
+    <item
+        android:id="@+id/nav_favorites"
+        android:icon="@drawable/ic_heart_filled"
+        android:title="Favoris" />
+
+    <item
+        android:id="@+id/nav_bookings"
+        android:icon="@drawable/ic_booking"
+        android:title="Réservations" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_person"
+        android:title="Profil" />
+
+</menu>
