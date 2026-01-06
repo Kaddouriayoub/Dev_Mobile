@@ -56,16 +56,16 @@
                 android:layout_height="wrap_content"
                 android:text="Location"
                 android:textSize="14sp"
-                android:textColor="#757575"
+                android:textColor="@color/colorGrayText"
                 android:layout_marginTop="2dp"/>
 
             <TextView
                 android:id="@+id/tv_workspace_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="$00.00 / hour"
+                android:text="$00.00 / day"
                 android:textSize="14sp"
-                android:textColor="#E91E63"
+                android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
@@ -82,7 +82,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_menu"
-                android:tint="#757575"
+                android:tint="@color/colorGrayText"
                 android:padding="4dp"
                 android:contentDescription="Options"/>
         </LinearLayout>

@@ -23,7 +23,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_listings"
-            android:tint="#E91E63"
+            android:tint="@color/colorPrimary"
             android:contentDescription="Workspaces"/>
 
         <TextView
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:text="Workspaces"
             android:textSize="12sp"
-            android:textColor="#E91E63"
+            android:textColor="@color/colorPrimary"
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
@@ -53,7 +53,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_calendar"
-            android:tint="#757575"
+            android:tint="@color/colorGrayText"
             android:contentDescription="Orders"/>
 
         <TextView
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:text="Orders"
             android:textSize="12sp"
-            android:textColor="#757575"
+            android:textColor="@color/colorGrayText"
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
@@ -83,7 +83,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_menu"
-            android:tint="#757575"
+            android:tint="@color/colorGrayText"
             android:contentDescription="Profile"/>
 
         <TextView
@@ -92,7 +92,7 @@
             android:layout_height="wrap_content"
             android:text="Profile"
             android:textSize="12sp"
-            android:textColor="#757575"
+            android:textColor="@color/colorGrayText"
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 </LinearLayout>
