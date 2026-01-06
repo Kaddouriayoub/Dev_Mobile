@@ -44,7 +44,7 @@
             android:id="@+id/tv_role"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Administrator"
+            android:text="User"
             android:textSize="14sp"
             android:textColor="@color/colorPrimary"
             android:layout_marginTop="4dp"/>
