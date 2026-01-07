@@ -23,6 +23,12 @@
         </activity>
 
         <activity
+            android:name=".ui.client.ClientDashboardActivity"
+            android:exported="true"/>
+        <activity
+            android:name=".ui.client.BookingActivity"
+            android:exported="true"/>
+        <activity
             android:name=".MainActivity"
             android:exported="false"/>
             

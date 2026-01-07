@@ -4,17 +4,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:layout_marginTop="15dp">
+    android:background="@color/white">
 
-    <!-- Scrollable Content -->
+    <!-- Scrollable content -->
     <ScrollView
         android:id="@+id/scrollBooking"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnReserve"
+        app:layout_constraintBottom_toTopOf="@id/btnConfirm"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -22,27 +21,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="24dp">
 
             <!-- Title -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Réservation"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#222222"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="24dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
             <!-- Date -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Choisir une date"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"
-                android:textColor="@color/black"/>
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
             <DatePicker
                 android:id="@+id/datePicker"
@@ -52,99 +50,132 @@
 
             <!-- Time -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Choisir l'horaire"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@color/black"/>
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center">
 
-                <TimePicker
-                    android:id="@+id/timeStart"
+                <!-- Start hour -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:timePickerMode="spinner"
-                    android:numbersInnerTextColor="@color/black"/>
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:text="Début"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+
+                    <NumberPicker
+                        android:id="@+id/startHourPicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:text="→"
+                    android:textSize="20sp"
+                    android:layout_marginHorizontal="16dp"
                     android:layout_height="wrap_content"
-                    android:text=" → "
-                    android:textSize="18sp"
-                    android:layout_marginHorizontal="8dp"/>
+                    android:layout_width="wrap_content"/>
 
-                <TimePicker
-                    android:id="@+id/timeEnd"
+                <!-- End hour -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:timePickerMode="spinner"/>
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:text="Fin"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+
+                    <NumberPicker
+                        android:id="@+id/endHourPicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+
             </LinearLayout>
 
-            <!-- Price Section -->
-            <LinearLayout
+            <!-- Pricing card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#FAFAFA"
-                android:padding="16dp"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="32dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tarification"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/txtPricePerHour"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Prix par heure : 15€"
-                    android:textSize="15sp"
-                    android:textColor="#444444"/>
+                    <TextView
+                        android:text="Tarification"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
 
-                <TextView
-                    android:id="@+id/txtTotalPrice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total : 45€"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="6dp"/>
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/txtPricePerHour"
+                        android:text="Prix par heure : --€"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="4dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+
+                    <TextView
+                        android:id="@+id/txtTotalPrice"
+                        android:text="Total : --€"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- Floating Reserve Button -->
+    <!-- Floating confirm button -->
     <Button
-        android:id="@+id/btnReserve"
+        android:id="@+id/btnConfirm"
         android:layout_width="0dp"
-        android:layout_height="52dp"
+        android:layout_height="56dp"
         android:text="Confirmer la réservation"
         android:textAllCaps="false"
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/white"
         android:backgroundTint="@color/black"
-        android:elevation="10dp"
-        app:layout_constraintWidth_percent="0.6"
+        app:layout_constraintWidth_percent="0.7"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="45dp"/>
+        android:layout_marginBottom="32dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
