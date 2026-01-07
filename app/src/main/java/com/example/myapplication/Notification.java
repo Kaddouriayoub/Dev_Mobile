@@ -1,7 +1,11 @@
 package com.example.myapplication;
 
-public class Notification {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class Notification extends RealmObject {
+
+    @PrimaryKey
     private Long id;
     private String message;
     private String type;
@@ -26,4 +30,3 @@ public class Notification {
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }
-
