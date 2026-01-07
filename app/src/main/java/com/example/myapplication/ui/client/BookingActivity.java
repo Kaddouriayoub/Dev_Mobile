@@ -15,7 +15,9 @@ import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -31,7 +33,10 @@ public class BookingActivity extends AppCompatActivity {
     private Button btnConfirm;
 
     private double pricePerHour;
+    private int capacity;
+
     private List<Reservation> dayReservations = new ArrayList<>();
+    private Map<Integer, Integer> hourOccupancy = new HashMap<>();
 
     private static final int OPEN_HOUR = 8;
     private static final int CLOSE_HOUR = 20;
@@ -56,6 +61,7 @@ public class BookingActivity extends AppCompatActivity {
 
         if (w != null) {
             pricePerHour = w.getPricePerHour();
+            capacity = w.getCapacity();
             ((TextView) findViewById(R.id.txtPricePerHour))
                     .setText("Prix par heure : " + pricePerHour + "€");
         }
@@ -73,7 +79,6 @@ public class BookingActivity extends AppCompatActivity {
                 datePicker.getDayOfMonth()
         );
 
-        // ✅ CONFIRM RESERVATION
         btnConfirm.setOnClickListener(v -> confirmReservation());
     }
 
@@ -91,7 +96,25 @@ public class BookingActivity extends AppCompatActivity {
         dayReservations.clear();
         dayReservations.addAll(results);
 
+        computeHourlyOccupancy();
         setupStartPicker();
+    }
+
+    private void computeHourlyOccupancy() {
+        hourOccupancy.clear();
+
+        for (int h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
+            hourOccupancy.put(h, 0);
+        }
+
+        for (Reservation r : dayReservations) {
+            int s = Integer.parseInt(r.getStartTime());
+            int e = Integer.parseInt(r.getEndTime());
+
+            for (int h = s; h < e; h++) {
+                hourOccupancy.put(h, hourOccupancy.get(h) + 1);
+            }
+        }
     }
 
     private void setupStartPicker() {
@@ -99,7 +122,7 @@ public class BookingActivity extends AppCompatActivity {
         List<Integer> availableStarts = new ArrayList<>();
 
         for (int h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
-            if (!isHourReserved(h)) {
+            if (hourOccupancy.get(h) < capacity) {
                 availableStarts.add(h);
             }
         }
@@ -117,24 +140,26 @@ public class BookingActivity extends AppCompatActivity {
         setupEndPicker(startHour);
 
         startPicker.setOnValueChangedListener((p, o, n) -> {
-            int newStart = availableStarts.get(n);
-            setupEndPicker(newStart);
+            setupEndPicker(availableStarts.get(n));
         });
     }
 
     private void setupEndPicker(int startHour) {
 
-        int nextBookingStart = CLOSE_HOUR;
-
-        for (Reservation r : dayReservations) {
-            int rs = Integer.parseInt(r.getStartTime());
-            if (rs > startHour && rs < nextBookingStart) {
-                nextBookingStart = rs;
-            }
-        }
-
         List<Integer> ends = new ArrayList<>();
-        for (int h = startHour + 1; h <= nextBookingStart; h++) {
+
+        for (int h = startHour + 1; h <= CLOSE_HOUR; h++) {
+
+            if (h == CLOSE_HOUR) {
+                ends.add(h);
+                break;
+            }
+
+            if (hourOccupancy.get(h) >= capacity) {
+                ends.add(h);
+                break;
+            }
+
             ends.add(h);
         }
 
@@ -143,18 +168,9 @@ public class BookingActivity extends AppCompatActivity {
         endPicker.setValue(0);
         updateTotal(startHour, ends.get(0));
 
-        endPicker.setOnValueChangedListener((p, o, n) -> {
-            updateTotal(startHour, ends.get(n));
-        });
-    }
-
-    private boolean isHourReserved(int hour) {
-        for (Reservation r : dayReservations) {
-            int s = Integer.parseInt(r.getStartTime());
-            int e = Integer.parseInt(r.getEndTime());
-            if (hour >= s && hour < e) return true;
-        }
-        return false;
+        endPicker.setOnValueChangedListener((p, o, n) ->
+                updateTotal(startHour, ends.get(n))
+        );
     }
 
     /* ---------------- CONFIRM ---------------- */
@@ -184,7 +200,7 @@ public class BookingActivity extends AppCompatActivity {
 
             Reservation res = r.createObject(Reservation.class, nextId);
             res.setWorkspaceId(workspaceId);
-            res.setClientId(0L); // 🔒 hard-coded client
+            res.setClientId(0L);
             res.setReservationDate(dateKey);
             res.setStartTime(String.valueOf(startHour));
             res.setEndTime(String.valueOf(endHour));
