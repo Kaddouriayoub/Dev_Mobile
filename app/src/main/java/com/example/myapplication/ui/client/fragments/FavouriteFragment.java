@@ -1,66 +1,92 @@
 package com.example.myapplication.ui.client.fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.model.Favorite;
+import com.example.myapplication.model.Workspace;
+import com.example.myapplication.ui.adapters.ClientWorkspaceAdapter;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FavouriteFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class FavouriteFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private RecyclerView recyclerView;
+    private Realm realm;
+    private int currentClientId = 0; // Remplace par l'ID réel du client connecté
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public FavouriteFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FavouriteFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FavouriteFragment newInstance(String param1, String param2) {
-        FavouriteFragment fragment = new FavouriteFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_favourite, container, false);
+
+        recyclerView = view.findViewById(R.id.rvFavoriteSpaces);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        realm = Realm.getDefaultInstance();
+
+        loadFavorites();
+
+        return view;
+    }
+
+    private void loadFavorites() {
+        // 1. Récupérer tous les favoris de ce client
+        RealmResults<Favorite> myFavorites = realm.where(Favorite.class)
+                .equalTo("clientId", currentClientId)
+                .findAll();
+
+        if (myFavorites.isEmpty()) {
+            Toast.makeText(getContext(), "Aucun favori trouvé", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        // 2. Extraire les IDs des Workspaces aimés
+        Long[] workspaceIds = new Long[myFavorites.size()];
+        for (int i = 0; i < myFavorites.size(); i++) {
+            Favorite fav = myFavorites.get(i);
+            if (fav != null) {
+                workspaceIds[i] = fav.getWorkspaceId();
+            }
+        }
+
+        // 3. Faire une nouvelle requête pour obtenir les Workspaces correspondant à ces IDs
+        // La méthode .in("champ", tableau[]) permet de filtrer par liste
+        RealmResults<Workspace> favoriteWorkspaces = realm.where(Workspace.class)
+                .in("id", workspaceIds)
+                .findAll();
+
+        // 4. Passer le résultat (qui est bien un RealmResults<Workspace>) à l'adaptateur existant
+        ClientWorkspaceAdapter adapter = new ClientWorkspaceAdapter(
+                favoriteWorkspaces,
+                new ClientWorkspaceAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(long workspaceId) {
+                        // Action au clic (ex: ouvrir les détails)
+                        Toast.makeText(getContext(), "Click sur ID: " + workspaceId, Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favourite, container, false);
+    public void onDestroy() {
+        super.onDestroy();
+        if (realm != null) {
+            realm.close();
+        }
     }
 }
