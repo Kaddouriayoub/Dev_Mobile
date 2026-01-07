@@ -9,6 +9,7 @@ public class User extends RealmObject {
     private Long id;
     private String fullName;
     private String email;
+    private String password; // Added password field
     private String role; // Store enum as String for Realm
     private String profileImage;
     private String createdAt;
@@ -25,6 +26,9 @@ public class User extends RealmObject {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public Role getRole() { return role != null ? Role.valueOf(role) : null; }
     public void setRole(Role role) { this.role = role != null ? role.name() : null; }

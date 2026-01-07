@@ -7,13 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Role;
 import com.example.myapplication.model.User;
+import com.example.myapplication.ui.login.LoginActivity;
+import com.example.myapplication.utils.SessionManager;
 import io.realm.Realm;
 
 public class AdminProfileFragment extends Fragment {
@@ -21,6 +23,7 @@ public class AdminProfileFragment extends Fragment {
     private TextView tvFullName, tvRole, tvEmail, tvCreatedAt;
     private Button btnLogout, btnEditProfile;
     private Realm realm;
+    private SessionManager sessionManager;
 
     @Nullable
     @Override
@@ -35,33 +38,44 @@ public class AdminProfileFragment extends Fragment {
         btnEditProfile = view.findViewById(R.id.btn_edit_profile);
 
         realm = Realm.getDefaultInstance();
+        // Use getContext() or getActivity() safely
+        if (getContext() != null) {
+            sessionManager = new SessionManager(getContext());
+        }
 
         loadProfileData();
 
         btnLogout.setOnClickListener(v -> {
-            // Logout logic
-            // TODO: Clear user session preference
-            startActivity(new Intent(getActivity(), MainActivity.class));
-            getActivity().finish();
+            if (sessionManager != null) {
+                sessionManager.logoutUser();
+            }
+            // Navigate back to LoginActivity
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                // Clear the back stack so user cannot go back to admin dashboard
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                getActivity().finish(); // Finish current activity (AdminDashboardActivity)
+            } else {
+                Toast.makeText(getContext(), "Error logging out", Toast.LENGTH_SHORT).show();
+            }
         });
 
         return view;
     }
 
     private void loadProfileData() {
-        // For demonstration, let's pick the first user with ADMIN role or create a dummy one
-        User user = realm.where(User.class).equalTo("role", Role.ADMIN.name()).findFirst();
+        if (sessionManager == null) return;
+        
+        Long userId = sessionManager.getUserId();
+        User user = null;
 
+        if (userId != -1) {
+             user = realm.where(User.class).equalTo("id", userId).findFirst();
+        }
+        
+        // Fallback or Dummy only if login skipped (which shouldn't happen now)
         if (user == null) {
-            // Create a dummy admin if none exists
-            realm.executeTransaction(r -> {
-                User newUser = r.createObject(User.class, 1L); // ID 1
-                newUser.setFullName("Mourad Admin");
-                newUser.setEmail("mourad@admin.com");
-                newUser.setRole(Role.ADMIN);
-                newUser.setCreatedAt("01/01/2024");
-                newUser.setEnabled(true);
-            });
             user = realm.where(User.class).equalTo("role", Role.ADMIN.name()).findFirst();
         }
 
