@@ -59,15 +59,42 @@
                 android:textColor="@color/colorGrayText"
                 android:layout_marginTop="2dp"/>
 
-            <TextView
-                android:id="@+id/tv_workspace_price"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="$00.00 / day"
-                android:textSize="14sp"
-                android:textColor="@color/colorPrimary"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp"/>
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tv_workspace_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$00.00 / day"
+                    android:textSize="14sp"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tv_workspace_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Available"
+                    android:textSize="12sp"
+                    android:textColor="#4CAF50"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/status_badge_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"/>
+
+                <TextView
+                    android:id="@+id/tv_workspace_capacity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 places"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorGrayText"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Actions -->
