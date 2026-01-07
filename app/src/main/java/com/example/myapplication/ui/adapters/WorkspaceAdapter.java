@@ -66,7 +66,7 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
         if (workspace != null) {
             holder.tvName.setText(workspace.getName());
             holder.tvLocation.setText(workspace.getCity());
-            holder.tvPrice.setText(String.format("$%.2f / day", workspace.getPricePerHour() * 8));
+            holder.tvPrice.setText(String.format("%.2f dh/h", workspace.getPricePerHour()));
 
             // Set status with color
             String status = workspace.getStatus();

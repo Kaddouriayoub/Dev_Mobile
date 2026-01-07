@@ -100,7 +100,7 @@
                     android:id="@+id/tv_total_price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="$00.00"
+                    android:text="00.00 dh"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold"
                     android:textSize="15sp"/>

@@ -109,7 +109,7 @@ public class AdminWorkspacePreviewFragment extends Fragment {
 
         // Set basic info
         tvName.setText(workspace.getName());
-        tvPrice.setText(String.format("$%.2f/h", workspace.getPricePerHour()));
+        tvPrice.setText(String.format("%.2f dh/h", workspace.getPricePerHour()));
 
         if (workspace.getType() != null) {
             tvType.setText(workspace.getType().name().replace("_", " "));
@@ -149,8 +149,8 @@ public class AdminWorkspacePreviewFragment extends Fragment {
             tvStatus.setText("N/A");
         }
 
-        // Capacity
-        tvCapacity.setText(workspace.getCapacity() + " places");
+        // Capacity (available / total)
+        tvCapacity.setText(workspace.getAvailablePlaces() + "/" + workspace.getCapacity() + " places");
 
         // Description
         String description = workspace.getDescription();

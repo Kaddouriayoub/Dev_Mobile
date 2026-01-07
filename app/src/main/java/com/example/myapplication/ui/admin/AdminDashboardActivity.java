@@ -8,6 +8,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import com.example.myapplication.R;
+import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
+import com.example.myapplication.model.Workspace;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
@@ -38,8 +43,76 @@ public class AdminDashboardActivity extends AppCompatActivity {
         navOrders.setOnClickListener(v -> loadFragment(new AdminOrdersFragment(), 2));
         navProfile.setOnClickListener(v -> loadFragment(new AdminProfileFragment(), 3));
 
+        // Create test data if needed
+        createTestDataIfNeeded();
+
         // Load Default Fragment
         loadFragment(new AdminWorkspacesFragment(), 1);
+    }
+
+    private void createTestDataIfNeeded() {
+        Realm realm = Realm.getDefaultInstance();
+        try {
+            // Check if we have workspaces but no orders (for testing)
+            RealmResults<Workspace> workspaces = realm.where(Workspace.class).findAll();
+            RealmResults<Reservation> reservations = realm.where(Reservation.class).findAll();
+
+            // Only create test orders if there are workspaces but no orders
+            if (workspaces.size() > 0 && reservations.size() == 0) {
+                realm.executeTransaction(r -> {
+                    Workspace firstWorkspace = workspaces.first();
+                    if (firstWorkspace != null) {
+                        // Create test order 1 - PENDING (client order)
+                        Reservation order1 = r.createObject(Reservation.class, System.currentTimeMillis());
+                        order1.setClientName("Ahmed Bennani");
+                        order1.setNumberOfPlaces(2);
+                        order1.setReservationDate("15/01/2026");
+                        order1.setStartTime("09:00");
+                        order1.setEndTime("17:00");
+                        order1.setTotalPrice(160.0);
+                        order1.setStatus(ReservationStatus.PENDING);
+                        order1.setAdminOrder(false);
+                        order1.setWorkspace(firstWorkspace);
+                        order1.setWorkspaceId(firstWorkspace.getId());
+
+                        // Create test order 2 - PENDING (client order)
+                        Reservation order2 = r.createObject(Reservation.class, System.currentTimeMillis() + 1);
+                        order2.setClientName("Fatima Alaoui");
+                        order2.setNumberOfPlaces(1);
+                        order2.setReservationDate("16/01/2026");
+                        order2.setStartTime("10:00");
+                        order2.setEndTime("14:00");
+                        order2.setTotalPrice(80.0);
+                        order2.setStatus(ReservationStatus.PENDING);
+                        order2.setAdminOrder(false);
+                        order2.setWorkspace(firstWorkspace);
+                        order2.setWorkspaceId(firstWorkspace.getId());
+
+                        // Create test order 3 - CONFIRMED
+                        Reservation order3 = r.createObject(Reservation.class, System.currentTimeMillis() + 2);
+                        order3.setClientName("Youssef Idrissi");
+                        order3.setNumberOfPlaces(3);
+                        order3.setReservationDate("14/01/2026");
+                        order3.setStartTime("08:00");
+                        order3.setEndTime("18:00");
+                        order3.setTotalPrice(300.0);
+                        order3.setStatus(ReservationStatus.CONFIRMED);
+                        order3.setAdminOrder(false);
+                        order3.setWorkspace(firstWorkspace);
+                        order3.setWorkspaceId(firstWorkspace.getId());
+
+                        // Update workspace available places for the confirmed order
+                        int newAvailable = firstWorkspace.getAvailablePlaces() - 3;
+                        firstWorkspace.setAvailablePlaces(Math.max(0, newAvailable));
+                        if (firstWorkspace.getAvailablePlaces() == 0) {
+                            firstWorkspace.setStatus("FULL");
+                        }
+                    }
+                });
+            }
+        } finally {
+            realm.close();
+        }
     }
 
     private void loadFragment(Fragment fragment, int tabIndex) {

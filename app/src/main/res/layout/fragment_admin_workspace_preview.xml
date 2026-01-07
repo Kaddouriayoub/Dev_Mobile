@@ -92,7 +92,7 @@
                         android:id="@+id/tv_price"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$00.00/h"
+                        android:text="00.00 dh/h"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="@color/colorPrimary"/>

@@ -91,7 +91,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             holder.tvPlaces.setText(places + " place" + (places > 1 ? "s" : ""));
 
             // Price and date
-            holder.tvTotalPrice.setText(String.format("$%.2f", reservation.getTotalPrice()));
+            holder.tvTotalPrice.setText(String.format("%.2f dh", reservation.getTotalPrice()));
             holder.tvDate.setText(reservation.getReservationDate());
 
             // Change status button
