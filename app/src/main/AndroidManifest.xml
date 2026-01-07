@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -14,7 +17,7 @@
         android:theme="@style/Theme.MyApplication">
         
         <activity
-            android:name=".ui.admin.AdminDashboardActivity"
+            android:name=".ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,15 +25,11 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".ui.client.ClientDashboardActivity"
-            android:exported="true"/>
-        <activity
-            android:name=".ui.client.BookingActivity"
-            android:exported="true"/>
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"/>
+        <activity android:name=".ui.login.SignupActivity" />
+        <activity android:name=".ui.login.VerificationActivity" />
+        <activity android:name=".ui.admin.AdminDashboardActivity" />
+        <activity android:name=".ui.client.ClientDashboardActivity" />
+        <activity android:name=".MainActivity" android:exported="false"/>
             
     </application>
 
