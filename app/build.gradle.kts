@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("realm-android")
 }
 
 android {
     namespace = "com.example.myapplication"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36 // Use assignment instead of block for simple properties
 
     defaultConfig {
         applicationId = "com.example.myapplication"
