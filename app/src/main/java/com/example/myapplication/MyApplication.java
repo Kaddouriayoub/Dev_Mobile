@@ -1,12 +1,16 @@
 package com.example.myapplication;
 
 import android.app.Application;
+import android.util.Log;
+
 import com.example.myapplication.model.Client;
 import com.example.myapplication.model.Role;
 import com.example.myapplication.model.SubscriptionType;
 import com.example.myapplication.model.User;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.model.WorkspaceType;
+import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -29,12 +33,16 @@ public class MyApplication extends Application {
 
     private void initializeTestData() {
         Realm realm = Realm.getDefaultInstance();
-        
+
         try {
-            // Check if data already exists
-            if (realm.where(User.class).count() == 0) {
-                realm.executeTransaction(r -> {
-                    // 1. Create Admin User
+            realm.executeTransaction(r -> {
+
+            /* ===============================
+               USERS / CLIENTS / WORKSPACES
+               =============================== */
+                if (r.where(User.class).count() == 0) {
+
+                    // Admin
                     User admin = r.createObject(User.class, 1L);
                     admin.setFullName("Mourad Admin");
                     admin.setEmail("admin@workspace.com");
@@ -42,23 +50,23 @@ public class MyApplication extends Application {
                     admin.setCreatedAt("01/01/2024");
                     admin.setEnabled(true);
                     admin.setProfileImage("https://example.com/admin.jpg");
-    
-                    // 2. Create a Client User
+
+                    // Client user
                     User clientUser = r.createObject(User.class, 2L);
                     clientUser.setFullName("John Doe");
                     clientUser.setEmail("john@client.com");
                     clientUser.setRole(Role.CLIENT);
                     clientUser.setCreatedAt("15/01/2024");
                     clientUser.setEnabled(true);
-    
-                    // 3. Create Client Profile linked to Client User
-                    Client client = r.createObject(Client.class, 2L); // Same ID as User for simplicity
+
+                    // Client profile
+                    Client client = r.createObject(Client.class, 2L);
                     client.setDiscountRate(0.0);
                     client.setLoyaltyPoints(100);
                     client.setSubscriptionType(SubscriptionType.FREE);
                     client.setTotalReservations(0);
-    
-                    // 4. Create some Workspaces
+
+                    // Workspaces
                     Workspace w1 = r.createObject(Workspace.class, 101L);
                     w1.setName("Downtown Coworking");
                     w1.setDescription("A modern open space in the city center with high-speed wifi.");
@@ -68,7 +76,7 @@ public class MyApplication extends Application {
                     w1.setCity("New York");
                     w1.setAddress("123 Broadway Ave");
                     w1.setStatus("AVAILABLE");
-    
+
                     Workspace w2 = r.createObject(Workspace.class, 102L);
                     w2.setName("Executive Meeting Room");
                     w2.setDescription("Private meeting room for up to 10 people with projector.");
@@ -78,7 +86,7 @@ public class MyApplication extends Application {
                     w2.setCity("New York");
                     w2.setAddress("123 Broadway Ave");
                     w2.setStatus("AVAILABLE");
-                    
+
                     Workspace w3 = r.createObject(Workspace.class, 103L);
                     w3.setName("Private Office Suite");
                     w3.setDescription("Fully furnished private office for small teams.");
@@ -88,14 +96,50 @@ public class MyApplication extends Application {
                     w3.setCity("San Francisco");
                     w3.setAddress("456 Market St");
                     w3.setStatus("AVAILABLE");
-                });
-            }
+                }
+
+            /* ===============================
+               RESERVATIONS (INDEPENDENT)
+               =============================== */
+                if (r.where(Reservation.class).count() == 0) {
+
+                    // Jan 7, 2026 : 9 → 13
+                    Reservation r1 = r.createObject(Reservation.class, 1001L);
+                    r1.setWorkspaceId(101L);
+                    r1.setClientId(2L);
+                    r1.setReservationDate("2026-1-7");
+                    r1.setStartTime("9");
+                    r1.setEndTime("13");
+                    r1.setStatus(ReservationStatus.CONFIRMED);
+                    r1.setTotalPrice(60);
+
+                    // Jan 7, 2026 : 15 → 17
+                    Reservation r2 = r.createObject(Reservation.class, 1002L);
+                    r2.setWorkspaceId(101L);
+                    r2.setClientId(2L);
+                    r2.setReservationDate("2026-1-7");
+                    r2.setStartTime("15");
+                    r2.setEndTime("17");
+                    r2.setStatus(ReservationStatus.CONFIRMED);
+                    r2.setTotalPrice(30);
+
+                    // Jan 8, 2026 : 10 → 14
+                    Reservation r3 = r.createObject(Reservation.class, 1003L);
+                    r3.setWorkspaceId(101L);
+                    r3.setClientId(2L);
+                    r3.setReservationDate("2026-1-8");
+                    r3.setStartTime("10");
+                    r3.setEndTime("14");
+                    r3.setStatus(ReservationStatus.CONFIRMED);
+                    r3.setTotalPrice(60);
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (realm != null) {
-                realm.close();
-            }
+            realm.close();
         }
     }
+
 }
