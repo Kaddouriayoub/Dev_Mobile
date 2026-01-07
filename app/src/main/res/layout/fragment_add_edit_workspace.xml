@@ -36,15 +36,19 @@
             android:layout_marginBottom="16dp">
 
             <LinearLayout
+                android:id="@+id/images_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <FrameLayout
+                    android:id="@+id/btn_add_image"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:background="#F0F0F0"
-                    android:layout_marginEnd="8dp">
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -53,8 +57,8 @@
                         android:layout_gravity="center"
                         android:tint="@color/colorGrayText"/>
                 </FrameLayout>
-                
-                <!-- Placeholder for added images -->
+
+                <!-- Selected images will be added here dynamically -->
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -144,7 +148,7 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Type Dropdown (Simulated with text input for now or spinner) -->
+        <!-- Type Dropdown -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
@@ -159,6 +163,32 @@
                 android:inputType="none"
                 android:text="Private Office"/>
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Status Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Status"
+            android:layout_marginBottom="16dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/at_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Delete Button (visible only in edit mode) -->
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Workspace"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp"/>
 
         <!-- Save Button -->
         <Button
