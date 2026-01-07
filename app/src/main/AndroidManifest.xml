@@ -14,7 +14,7 @@
         android:theme="@style/Theme.MyApplication">
         
         <activity
-            android:name=".AdminDashboardActivity"
+            android:name=".ui.admin.AdminDashboardActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
