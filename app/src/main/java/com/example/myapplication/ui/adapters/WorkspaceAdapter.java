@@ -66,7 +66,7 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
         if (workspace != null) {
             holder.tvName.setText(workspace.getName());
             holder.tvLocation.setText(workspace.getCity());
-            holder.tvPrice.setText(String.format("$%.2f / day", workspace.getPricePerHour() * 8));
+            holder.tvPrice.setText(String.format("%.2f dh/h", workspace.getPricePerHour()));
 
             // Set status with color
             String status = workspace.getStatus();
@@ -75,9 +75,6 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
                 switch (status.toUpperCase()) {
                     case "AVAILABLE":
                         holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
-                        break;
-                    case "FULL":
-                        holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
                         break;
                     case "MAINTENANCE":
                         holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_orange_dark));
@@ -89,19 +86,9 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
                 holder.tvStatus.setText("N/A");
             }
 
-            // Set capacity (available / total)
-            int available = workspace.getAvailablePlaces();
-            int total = workspace.getCapacity();
-            holder.tvCapacity.setText(available + "/" + total + " places");
-
-            // Color code based on availability
-            if (available == 0) {
-                holder.tvCapacity.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
-            } else if (available <= total * 0.2) {
-                holder.tvCapacity.setTextColor(context.getResources().getColor(android.R.color.holo_orange_dark));
-            } else {
-                holder.tvCapacity.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
-            }
+            // Set capacity (total only)
+            holder.tvCapacity.setText(workspace.getCapacity() + " places");
+            holder.tvCapacity.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
 
             // Load first image if available
             RealmList<String> images = workspace.getImages();

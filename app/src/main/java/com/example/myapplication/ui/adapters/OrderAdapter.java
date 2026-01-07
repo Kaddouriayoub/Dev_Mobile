@@ -65,6 +65,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                     case CANCELLED:
                         holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
                         break;
+                    case COMPLETED:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+                        break;
                 }
             }
 
@@ -86,12 +89,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                 holder.tvWorkspaceName.setText("Unknown Workspace");
             }
 
-            // Number of places
-            int places = reservation.getNumberOfPlaces();
-            holder.tvPlaces.setText(places + " place" + (places > 1 ? "s" : ""));
+            // Time range
+            String startTime = reservation.getStartTime();
+            String endTime = reservation.getEndTime();
+            if (startTime != null && endTime != null) {
+                holder.tvPlaces.setText(startTime + ":00 - " + endTime + ":00");
+            } else {
+                holder.tvPlaces.setText("--");
+            }
 
             // Price and date
-            holder.tvTotalPrice.setText(String.format("$%.2f", reservation.getTotalPrice()));
+            holder.tvTotalPrice.setText(String.format("%.2f dh", reservation.getTotalPrice()));
             holder.tvDate.setText(reservation.getReservationDate());
 
             // Change status button

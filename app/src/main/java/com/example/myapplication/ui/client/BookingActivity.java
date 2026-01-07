@@ -88,9 +88,11 @@ public class BookingActivity extends AppCompatActivity {
 
         String dateKey = year + "-" + (month + 1) + "-" + day;
 
+        // Only check CONFIRMED reservations for conflicts
         RealmResults<Reservation> results = realm.where(Reservation.class)
                 .equalTo("workspaceId", workspaceId)
                 .equalTo("reservationDate", dateKey)
+                .equalTo("status", ReservationStatus.CONFIRMED.name())
                 .findAll();
 
         dayReservations.clear();
@@ -205,10 +207,10 @@ public class BookingActivity extends AppCompatActivity {
             res.setStartTime(String.valueOf(startHour));
             res.setEndTime(String.valueOf(endHour));
             res.setTotalPrice(total);
-            res.setStatus(ReservationStatus.CONFIRMED);
+            res.setStatus(ReservationStatus.PENDING); // Client orders start as PENDING
         });
 
-        Toast.makeText(this, "Réservation confirmée", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Réservation envoyée - En attente de confirmation", Toast.LENGTH_SHORT).show();
         finish();
     }
 

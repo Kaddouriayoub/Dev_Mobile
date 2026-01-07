@@ -18,9 +18,10 @@ public class Workspace extends RealmObject {
     private String address;
     private RealmList<String> images; // RealmList instead of List
     private String status;
+    private User admin;       // Reference to the admin who created this workspace
+    private Long adminId;     // Admin ID for queries
 
     public Workspace() {}
-
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -54,4 +55,10 @@ public class Workspace extends RealmObject {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public User getAdmin() { return admin; }
+    public void setAdmin(User admin) { this.admin = admin; }
+
+    public Long getAdminId() { return adminId; }
+    public void setAdminId(Long adminId) { this.adminId = adminId; }
 }

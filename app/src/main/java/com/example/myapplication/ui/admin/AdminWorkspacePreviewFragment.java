@@ -109,7 +109,7 @@ public class AdminWorkspacePreviewFragment extends Fragment {
 
         // Set basic info
         tvName.setText(workspace.getName());
-        tvPrice.setText(String.format("$%.2f/h", workspace.getPricePerHour()));
+        tvPrice.setText(String.format("%.2f dh/h", workspace.getPricePerHour()));
 
         if (workspace.getType() != null) {
             tvType.setText(workspace.getType().name().replace("_", " "));
@@ -135,9 +135,6 @@ public class AdminWorkspacePreviewFragment extends Fragment {
             switch (status.toUpperCase()) {
                 case "AVAILABLE":
                     tvStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-                    break;
-                case "FULL":
-                    tvStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
                     break;
                 case "MAINTENANCE":
                     tvStatus.setTextColor(getResources().getColor(android.R.color.holo_orange_dark));

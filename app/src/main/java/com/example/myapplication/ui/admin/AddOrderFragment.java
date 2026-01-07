@@ -1,7 +1,5 @@
 package com.example.myapplication.ui.admin;
 
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,65 +7,114 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
 import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 
 public class AddOrderFragment extends Fragment {
 
     private AutoCompleteTextView atWorkspace;
-    private TextInputEditText etNumberOfPlaces, etClientName, etDate, etStartTime, etEndTime, etTotalPrice;
-    private TextView tvAvailablePlaces;
-    private Button btnCreate;
-    private Realm realm;
+    private TextInputEditText etClientName;
+    private TextView tvWorkspaceInfo;
+    private TextView txtPricePerHour, txtDuration, txtTotalPrice;
+    private NumberPicker startPicker, endPicker;
+    private DatePicker datePicker;
+    private Button btnConfirm;
 
+    private Realm realm;
     private List<Workspace> workspaceList;
     private Workspace selectedWorkspace;
+
+    private double pricePerHour;
+
+    private List<Reservation> dayReservations = new ArrayList<>();
+    private Set<Integer> bookedHours = new HashSet<>();
+
+    private static final int OPEN_HOUR = 8;
+    private static final int CLOSE_HOUR = 20;
+
+    // Track current available hours for start/end pickers
+    private List<Integer> currentStartHours = new ArrayList<>();
+    private List<Integer> currentEndHours = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_order, container, false);
 
+        // Initialize views
         atWorkspace = view.findViewById(R.id.at_workspace);
-        etNumberOfPlaces = view.findViewById(R.id.et_number_of_places);
         etClientName = view.findViewById(R.id.et_client_name);
-        tvAvailablePlaces = view.findViewById(R.id.tv_available_places);
-        etDate = view.findViewById(R.id.et_date);
-        etStartTime = view.findViewById(R.id.et_start_time);
-        etEndTime = view.findViewById(R.id.et_end_time);
-        etTotalPrice = view.findViewById(R.id.et_total_price);
-        btnCreate = view.findViewById(R.id.btn_create_order);
+        tvWorkspaceInfo = view.findViewById(R.id.tv_workspace_info);
+        datePicker = view.findViewById(R.id.datePicker);
+        startPicker = view.findViewById(R.id.startHourPicker);
+        endPicker = view.findViewById(R.id.endHourPicker);
+        txtPricePerHour = view.findViewById(R.id.txtPricePerHour);
+        txtDuration = view.findViewById(R.id.txtDuration);
+        txtTotalPrice = view.findViewById(R.id.txtTotalPrice);
+        btnConfirm = view.findViewById(R.id.btnConfirm);
 
         realm = Realm.getDefaultInstance();
 
+        // Setup workspace dropdown
         setupWorkspaceDropdown();
-        setupDateTimePickers();
 
-        btnCreate.setOnClickListener(v -> createOrder());
+        // Setup date picker listener
+        datePicker.init(
+                datePicker.getYear(),
+                datePicker.getMonth(),
+                datePicker.getDayOfMonth(),
+                (picker, year, month, day) -> {
+                    if (selectedWorkspace != null) {
+                        loadDayReservations(year, month, day);
+                    }
+                }
+        );
+
+        // Confirm button
+        btnConfirm.setOnClickListener(v -> confirmOrder());
+
+        // Initially disable pickers until workspace is selected
+        setPickersEnabled(false);
 
         return view;
     }
 
+    private void setPickersEnabled(boolean enabled) {
+        startPicker.setEnabled(enabled);
+        endPicker.setEnabled(enabled);
+        datePicker.setEnabled(enabled);
+    }
+
     private void setupWorkspaceDropdown() {
-        RealmResults<Workspace> workspaces = realm.where(Workspace.class).findAll();
+        // Only show workspaces with AVAILABLE status (exclude MAINTENANCE)
+        RealmResults<Workspace> workspaces = realm.where(Workspace.class)
+                .equalTo("status", "AVAILABLE")
+                .findAll();
         workspaceList = new ArrayList<>(realm.copyFromRealm(workspaces));
 
         List<String> workspaceNames = new ArrayList<>();
         for (Workspace w : workspaceList) {
-            workspaceNames.add(w.getName() + " (" + w.getAvailablePlaces() + "/" + w.getCapacity() + " available)");
+            workspaceNames.add(w.getName() + " - " + w.getPricePerHour() + " dh/h");
         }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, workspaceNames);
@@ -75,118 +122,235 @@ public class AddOrderFragment extends Fragment {
 
         atWorkspace.setOnItemClickListener((parent, view, position, id) -> {
             selectedWorkspace = workspaceList.get(position);
-            tvAvailablePlaces.setVisibility(View.VISIBLE);
-            tvAvailablePlaces.setText("Available places: " + selectedWorkspace.getAvailablePlaces() + "/" + selectedWorkspace.getCapacity());
+            pricePerHour = selectedWorkspace.getPricePerHour();
 
-            if (selectedWorkspace.getAvailablePlaces() == 0) {
-                tvAvailablePlaces.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-            } else {
-                tvAvailablePlaces.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            // Show workspace info
+            tvWorkspaceInfo.setVisibility(View.VISIBLE);
+            tvWorkspaceInfo.setText("Capacity: " + selectedWorkspace.getCapacity() + " places");
+
+            // Update price display
+            txtPricePerHour.setText("Price per hour: " + pricePerHour + " dh");
+
+            // Enable pickers
+            setPickersEnabled(true);
+
+            // Load reservations for selected date
+            loadDayReservations(
+                    datePicker.getYear(),
+                    datePicker.getMonth(),
+                    datePicker.getDayOfMonth()
+            );
+        });
+    }
+
+    /* ---------------- CORE LOGIC ---------------- */
+
+    private void loadDayReservations(int year, int month, int day) {
+        if (selectedWorkspace == null) return;
+
+        String dateKey = year + "-" + (month + 1) + "-" + day;
+
+        RealmResults<Reservation> results = realm.where(Reservation.class)
+                .equalTo("workspaceId", selectedWorkspace.getId())
+                .equalTo("reservationDate", dateKey)
+                .equalTo("status", ReservationStatus.CONFIRMED.name())
+                .findAll();
+
+        dayReservations.clear();
+        dayReservations.addAll(realm.copyFromRealm(results));
+
+        computeBookedHours();
+        setupStartPicker();
+    }
+
+    private void computeBookedHours() {
+        bookedHours.clear();
+
+        // Find all hours that are already booked
+        for (Reservation r : dayReservations) {
+            try {
+                int s = Integer.parseInt(r.getStartTime().replace(":00", ""));
+                int e = Integer.parseInt(r.getEndTime().replace(":00", ""));
+
+                for (int h = s; h < e; h++) {
+                    bookedHours.add(h);
+                }
+            } catch (NumberFormatException e) {
+                // Skip malformed reservations
+            }
+        }
+    }
+
+    private void setupStartPicker() {
+        currentStartHours.clear();
+
+        // Find available start hours (not booked)
+        for (int h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
+            if (!bookedHours.contains(h)) {
+                currentStartHours.add(h);
+            }
+        }
+
+        if (currentStartHours.isEmpty()) {
+            // No available slots
+            applyPickerValues(startPicker, new ArrayList<>());
+            applyPickerValues(endPicker, new ArrayList<>());
+            txtTotalPrice.setText("Total: -- dh (fully booked)");
+            txtDuration.setText("Duration: -- hours");
+            return;
+        }
+
+        applyPickerValues(startPicker, currentStartHours);
+        startPicker.setValue(0);
+
+        int startHour = currentStartHours.get(0);
+        setupEndPicker(startHour);
+
+        startPicker.setOnValueChangedListener((p, o, n) -> {
+            if (n < currentStartHours.size()) {
+                setupEndPicker(currentStartHours.get(n));
             }
         });
     }
 
-    private void setupDateTimePickers() {
-        etDate.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
-                String date = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year);
-                etDate.setText(date);
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-        });
+    private void setupEndPicker(int startHour) {
+        currentEndHours.clear();
 
-        etStartTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new TimePickerDialog(requireContext(), (view, hourOfDay, minute) -> {
-                String time = String.format("%02d:%02d", hourOfDay, minute);
-                etStartTime.setText(time);
-            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
-        });
+        // Find valid end hours (consecutive free slots from start)
+        for (int h = startHour + 1; h <= CLOSE_HOUR; h++) {
+            if (h == CLOSE_HOUR) {
+                // Can end at closing time
+                currentEndHours.add(h);
+                break;
+            }
 
-        etEndTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            new TimePickerDialog(requireContext(), (view, hourOfDay, minute) -> {
-                String time = String.format("%02d:%02d", hourOfDay, minute);
-                etEndTime.setText(time);
-            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
-        });
+            if (bookedHours.contains(h)) {
+                // Hit a booked hour, must end here
+                currentEndHours.add(h);
+                break;
+            }
+
+            currentEndHours.add(h);
+        }
+
+        if (currentEndHours.isEmpty()) {
+            currentEndHours.add(startHour + 1);
+        }
+
+        applyPickerValues(endPicker, currentEndHours);
+        endPicker.setValue(0);
+
+        updatePricing();
+
+        endPicker.setOnValueChangedListener((p, o, n) -> updatePricing());
     }
 
-    private void createOrder() {
+    private void applyPickerValues(NumberPicker picker, List<Integer> values) {
+        if (values.isEmpty()) {
+            picker.setDisplayedValues(null);
+            picker.setMinValue(0);
+            picker.setMaxValue(0);
+            picker.setDisplayedValues(new String[]{"--:--"});
+            return;
+        }
+
+        String[] displayed = new String[values.size()];
+        for (int i = 0; i < values.size(); i++) {
+            displayed[i] = values.get(i) + ":00";
+        }
+
+        picker.setDisplayedValues(null);
+        picker.setMinValue(0);
+        picker.setMaxValue(values.size() - 1);
+        picker.setDisplayedValues(displayed);
+        picker.setWrapSelectorWheel(false);
+    }
+
+    private void updatePricing() {
+        if (selectedWorkspace == null || currentStartHours.isEmpty() || currentEndHours.isEmpty()) {
+            return;
+        }
+
+        int startIdx = startPicker.getValue();
+        int endIdx = endPicker.getValue();
+
+        if (startIdx >= currentStartHours.size() || endIdx >= currentEndHours.size()) {
+            return;
+        }
+
+        int startHour = currentStartHours.get(startIdx);
+        int endHour = currentEndHours.get(endIdx);
+
+        int hours = endHour - startHour;
+        double total = hours * pricePerHour;
+
+        txtDuration.setText("Duration: " + hours + " hour(s)");
+        txtTotalPrice.setText("Total: " + String.format("%.2f", total) + " dh");
+    }
+
+    /* ---------------- CONFIRM ORDER ---------------- */
+
+    private void confirmOrder() {
         if (selectedWorkspace == null) {
             Toast.makeText(getContext(), "Please select a workspace", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        final String clientName = etClientName.getText().toString().trim();
-        final String numberOfPlacesStr = etNumberOfPlaces.getText().toString().trim();
-        final String date = etDate.getText().toString().trim();
-        final String startTime = etStartTime.getText().toString().trim();
-        final String endTime = etEndTime.getText().toString().trim();
-        final String priceStr = etTotalPrice.getText().toString().trim();
-
+        String clientName = etClientName.getText().toString().trim();
         if (clientName.isEmpty()) {
             Toast.makeText(getContext(), "Please enter client name", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (numberOfPlacesStr.isEmpty()) {
-            Toast.makeText(getContext(), "Please enter number of places", Toast.LENGTH_SHORT).show();
+        if (currentStartHours.isEmpty() || currentEndHours.isEmpty()) {
+            Toast.makeText(getContext(), "No available time slots", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int numberOfPlaces = Integer.parseInt(numberOfPlacesStr);
+        int startIdx = startPicker.getValue();
+        int endIdx = endPicker.getValue();
 
-        // Check if enough places available
-        Workspace currentWorkspace = realm.where(Workspace.class).equalTo("id", selectedWorkspace.getId()).findFirst();
-        if (currentWorkspace == null) {
-            Toast.makeText(getContext(), "Workspace not found", Toast.LENGTH_SHORT).show();
+        if (startIdx >= currentStartHours.size() || endIdx >= currentEndHours.size()) {
+            Toast.makeText(getContext(), "Invalid time selection", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (numberOfPlaces > currentWorkspace.getAvailablePlaces()) {
-            Toast.makeText(getContext(), "Not enough places available! Only " + currentWorkspace.getAvailablePlaces() + " left.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        int startHour = currentStartHours.get(startIdx);
+        int endHour = currentEndHours.get(endIdx);
 
-        if (date.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
-            Toast.makeText(getContext(), "Please fill date and time", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        int year = datePicker.getYear();
+        int month = datePicker.getMonth() + 1;
+        int day = datePicker.getDayOfMonth();
+        String dateKey = year + "-" + month + "-" + day;
 
-        final double totalPrice = priceStr.isEmpty() ? 0 : Double.parseDouble(priceStr);
+        int hours = endHour - startHour;
+        double total = hours * pricePerHour;
+
+        final long workspaceId = selectedWorkspace.getId();
 
         realm.executeTransaction(r -> {
-            // Create reservation
-            Reservation reservation = r.createObject(Reservation.class, System.currentTimeMillis());
+            // Create reservation with unique ID
+            Number maxId = r.where(Reservation.class).max("id");
+            long nextId = (maxId == null) ? 1 : maxId.longValue() + 1;
 
-            reservation.setReservationDate(date);
-            reservation.setStartTime(startTime);
-            reservation.setEndTime(endTime);
-            reservation.setTotalPrice(totalPrice);
-            reservation.setNumberOfPlaces(numberOfPlaces);
+            Reservation reservation = r.createObject(Reservation.class, nextId);
             reservation.setClientName(clientName);
-            reservation.setAdminOrder(true); // Admin orders are marked
-
-            // Admin orders are auto-confirmed
-            reservation.setStatus(ReservationStatus.CONFIRMED);
+            reservation.setReservationDate(dateKey);
+            reservation.setStartTime(String.valueOf(startHour));
+            reservation.setEndTime(String.valueOf(endHour));
+            reservation.setTotalPrice(total);
+            reservation.setStatus(ReservationStatus.CONFIRMED); // Admin orders auto-confirmed
+            reservation.setAdminOrder(true);
+            reservation.setWorkspaceId(workspaceId);
 
             // Link workspace
-            Workspace managedWorkspace = r.where(Workspace.class).equalTo("id", selectedWorkspace.getId()).findFirst();
-            reservation.setWorkspace(managedWorkspace);
-            reservation.setWorkspaceId(managedWorkspace.getId());
-
-            // Update available places (since admin orders are auto-confirmed)
-            int newAvailable = managedWorkspace.getAvailablePlaces() - numberOfPlaces;
-            managedWorkspace.setAvailablePlaces(Math.max(0, newAvailable));
-
-            // Update workspace status if full
-            if (managedWorkspace.getAvailablePlaces() == 0) {
-                managedWorkspace.setStatus("FULL");
+            Workspace managedWorkspace = r.where(Workspace.class).equalTo("id", workspaceId).findFirst();
+            if (managedWorkspace != null) {
+                reservation.setWorkspace(managedWorkspace);
             }
         });
 
-        Toast.makeText(getContext(), "Order Created (Confirmed)", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Order Created Successfully!", Toast.LENGTH_SHORT).show();
         getParentFragmentManager().popBackStack();
     }
 
