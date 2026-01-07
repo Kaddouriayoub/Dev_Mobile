@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,9 +43,10 @@ public class FavouriteFragment extends Fragment {
     }
 
     private void loadFavorites() {
-        // 1. Récupérer tous les favoris de ce client
+        // 1. Get all favorites for this client
         RealmResults<Favorite> myFavorites = realm.where(Favorite.class)
                 .equalTo("clientId", currentClientId)
+                .sort("createdAt", io.realm.Sort.DESCENDING)
                 .findAll();
 
         if (myFavorites.isEmpty()) {
@@ -52,7 +54,7 @@ public class FavouriteFragment extends Fragment {
             return;
         }
 
-        // 2. Extraire les IDs des Workspaces aimés
+        // 2. Extract Workspace IDs
         Long[] workspaceIds = new Long[myFavorites.size()];
         for (int i = 0; i < myFavorites.size(); i++) {
             Favorite fav = myFavorites.get(i);
@@ -61,26 +63,67 @@ public class FavouriteFragment extends Fragment {
             }
         }
 
-        // 3. Faire une nouvelle requête pour obtenir les Workspaces correspondant à ces IDs
-        // La méthode .in("champ", tableau[]) permet de filtrer par liste
+        // 3. Query Workspaces from those IDs
         RealmResults<Workspace> favoriteWorkspaces = realm.where(Workspace.class)
                 .in("id", workspaceIds)
                 .findAll();
 
-        // 4. Passer le résultat (qui est bien un RealmResults<Workspace>) à l'adaptateur existant
+        // 4. Pass results to Adapter with Navigation Logic
         ClientWorkspaceAdapter adapter = new ClientWorkspaceAdapter(
                 favoriteWorkspaces,
-                new ClientWorkspaceAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(long workspaceId) {
-                        // Action au clic (ex: ouvrir les détails)
-                        Toast.makeText(getContext(), "Click sur ID: " + workspaceId, Toast.LENGTH_SHORT).show();
-                    }
+                workspaceId -> {
+                    // Same logic as ExploreFragment: Navigate to details
+                    WorkspaceDetailsFragment fragment =
+                            WorkspaceDetailsFragment.newInstance(workspaceId);
+
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, fragment)
+                            .addToBackStack(null) // Allows user to press 'Back' to return to Favorites
+                            .commit();
                 }
         );
 
         recyclerView.setAdapter(adapter);
+        // ... après recyclerView.setAdapter(adapter);
+
+        ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false; // On ne gère pas le déplacement (drag & drop)
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Workspace workspaceToRemove = favoriteWorkspaces.get(position);
+
+                if (workspaceToRemove != null) {
+                    long wsId = workspaceToRemove.getId();
+
+                    // Supprimer de la base de données Realm
+                    realm.executeTransaction(r -> {
+                        Favorite fav = r.where(Favorite.class)
+                                .equalTo("clientId", currentClientId)
+                                .equalTo("workspaceId", wsId)
+                                .findFirst();
+                        if (fav != null) {
+                            fav.deleteFromRealm();
+                        }
+                    });
+
+                    // Mettre à jour l'affichage
+                    // Comme vous utilisez RealmResults, la liste se met à jour automatiquement si l'adapter est bien configuré
+                    // Sinon, on recharge simplement pour plus de sécurité :
+                    loadFavorites();
+                    Toast.makeText(getContext(), "Favori supprimé", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        new ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView);
     }
+
 
     @Override
     public void onDestroy() {
