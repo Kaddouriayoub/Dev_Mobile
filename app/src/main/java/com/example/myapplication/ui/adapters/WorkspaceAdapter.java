@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Workspace;
+import io.realm.RealmList;
 import io.realm.RealmResults;
 
 public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.ViewHolder> {
@@ -40,11 +42,25 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
         Workspace workspace = workspaces.get(position);
         if (workspace != null) {
             holder.tvName.setText(workspace.getName());
-            holder.tvLocation.setText(workspace.getCity()); // Or getAddress()
-            holder.tvPrice.setText(String.format("$%.2f / day", workspace.getPricePerHour() * 8)); // Assuming 8 hour day for display or just per hour
+            holder.tvLocation.setText(workspace.getCity());
+            holder.tvPrice.setText(String.format("$%.2f / day", workspace.getPricePerHour() * 8));
 
-            // TODO: Load image using Glide/Picasso if available
-            // holder.imgWorkspace.setImageResource(...);
+            // Load first image if available
+            RealmList<String> images = workspace.getImages();
+            if (images != null && !images.isEmpty()) {
+                String firstImageUri = images.first();
+                if (firstImageUri != null && !firstImageUri.isEmpty()) {
+                    try {
+                        holder.imgWorkspace.setImageURI(Uri.parse(firstImageUri));
+                    } catch (Exception e) {
+                        holder.imgWorkspace.setImageResource(R.drawable.ic_launcher_background);
+                    }
+                } else {
+                    holder.imgWorkspace.setImageResource(R.drawable.ic_launcher_background);
+                }
+            } else {
+                holder.imgWorkspace.setImageResource(R.drawable.ic_launcher_background);
+            }
 
             holder.btnEdit.setOnClickListener(v -> listener.onEditClick(workspace));
         }
