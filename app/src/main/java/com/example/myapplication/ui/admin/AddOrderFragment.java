@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.admin;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,6 +11,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.example.myapplication.R;
+import com.example.myapplication.model.Client;
+import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
+import com.example.myapplication.model.Workspace;
 import com.google.android.material.textfield.TextInputEditText;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -76,11 +81,6 @@ public class AddOrderFragment extends Fragment {
         clientList = new ArrayList<>(realm.copyFromRealm(clients));
         List<String> clientNames = new ArrayList<>();
         for (Client c : clientList) {
-            // Assuming Client has an ID, but maybe we want to show something else? 
-            // The Client model only has id, discountRate, loyaltyPoints, etc. 
-            // It doesn't seem to have a 'name' field based on previous interaction (User has name, Client is separate?).
-            // Let's check Client model again. If it links to User, we might need that.
-            // For now, let's display "Client #" + ID
             clientNames.add("Client #" + c.getId());
         }
         ArrayAdapter<String> clientAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, clientNames);
@@ -121,10 +121,6 @@ public class AddOrderFragment extends Fragment {
                 reservation.setStatus(ReservationStatus.PENDING);
             }
 
-            // Link relationships
-            // Note: Since selectedWorkspace is detached (copyFromRealm), we should find the attached one or set ID
-            // Ideally, we set the ID and let Realm handle relationship if managed, or find the managed object.
-            
             Workspace managedWorkspace = r.where(Workspace.class).equalTo("id", selectedWorkspace.getId()).findFirst();
             reservation.setWorkspace(managedWorkspace);
             reservation.setWorkspaceId(managedWorkspace.getId());

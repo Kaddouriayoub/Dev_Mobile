@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.model;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;

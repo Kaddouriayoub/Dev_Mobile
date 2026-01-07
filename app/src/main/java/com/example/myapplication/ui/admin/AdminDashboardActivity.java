@@ -1,13 +1,13 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.admin;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import com.example.myapplication.R;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 

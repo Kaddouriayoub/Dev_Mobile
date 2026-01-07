@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.admin;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,9 +11,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.example.myapplication.R;
+import com.example.myapplication.model.Workspace;
+import com.example.myapplication.model.WorkspaceType;
 import com.google.android.material.textfield.TextInputEditText;
 import io.realm.Realm;
-import java.util.UUID;
 
 public class AddEditWorkspaceFragment extends Fragment {
 
@@ -21,7 +23,7 @@ public class AddEditWorkspaceFragment extends Fragment {
     private AutoCompleteTextView atType;
     private Button btnSave;
     private Realm realm;
-    private Long workspaceId; // Null if adding new
+    private Long workspaceId; 
 
     @Nullable
     @Override

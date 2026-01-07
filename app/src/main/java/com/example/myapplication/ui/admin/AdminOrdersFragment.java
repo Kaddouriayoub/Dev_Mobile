@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.admin;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -12,6 +12,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.myapplication.R;
+import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
+import com.example.myapplication.ui.adapters.OrderAdapter;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
