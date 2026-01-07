@@ -1,11 +1,15 @@
 package com.example.myapplication;
 
-public class Client {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class Client extends RealmObject {
+
+    @PrimaryKey
     private Long id;
     private double discountRate;
     private int loyaltyPoints;
-    private SubscriptionType subscriptionType;
+    private String subscriptionType; // Enum as String
     private int totalReservations;
 
     public Client() {}
@@ -20,10 +24,9 @@ public class Client {
     public int getLoyaltyPoints() { return loyaltyPoints; }
     public void setLoyaltyPoints(int loyaltyPoints) { this.loyaltyPoints = loyaltyPoints; }
 
-    public SubscriptionType getSubscriptionType() { return subscriptionType; }
-    public void setSubscriptionType(SubscriptionType subscriptionType) { this.subscriptionType = subscriptionType; }
+    public SubscriptionType getSubscriptionType() { return subscriptionType != null ? SubscriptionType.valueOf(subscriptionType) : null; }
+    public void setSubscriptionType(SubscriptionType subscriptionType) { this.subscriptionType = subscriptionType != null ? subscriptionType.name() : null; }
 
     public int getTotalReservations() { return totalReservations; }
     public void setTotalReservations(int totalReservations) { this.totalReservations = totalReservations; }
 }
-

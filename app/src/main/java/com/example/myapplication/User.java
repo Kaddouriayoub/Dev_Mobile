@@ -1,11 +1,15 @@
 package com.example.myapplication;
 
-public class User {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class User extends RealmObject {
+
+    @PrimaryKey
     private Long id;
     private String fullName;
     private String email;
-    private Role role;
+    private String role; // Store enum as String for Realm
     private String profileImage;
     private String createdAt;
     private boolean enabled;
@@ -22,8 +26,8 @@ public class User {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public Role getRole() { return role != null ? Role.valueOf(role) : null; }
+    public void setRole(Role role) { this.role = role != null ? role.name() : null; }
 
     public String getProfileImage() { return profileImage; }
     public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
