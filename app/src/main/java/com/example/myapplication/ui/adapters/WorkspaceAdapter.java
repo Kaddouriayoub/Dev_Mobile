@@ -76,9 +76,6 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
                     case "AVAILABLE":
                         holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
                         break;
-                    case "FULL":
-                        holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
-                        break;
                     case "MAINTENANCE":
                         holder.tvStatus.setTextColor(context.getResources().getColor(android.R.color.holo_orange_dark));
                         break;

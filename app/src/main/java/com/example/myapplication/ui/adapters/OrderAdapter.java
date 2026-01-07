@@ -65,6 +65,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                     case CANCELLED:
                         holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
                         break;
+                    case COMPLETED:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+                        break;
                 }
             }
 

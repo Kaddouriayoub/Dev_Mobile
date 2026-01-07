@@ -4,5 +4,6 @@ public enum ReservationStatus {
     PENDING,
     CONFIRMED,
     REFUSED,
-    CANCELLED
+    CANCELLED,
+    COMPLETED  // Automatically set when reservation time has ended
 }

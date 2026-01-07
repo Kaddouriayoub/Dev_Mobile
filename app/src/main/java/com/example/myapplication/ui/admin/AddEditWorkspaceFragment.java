@@ -118,7 +118,7 @@ public class AddEditWorkspaceFragment extends Fragment {
     }
 
     private void setupStatusDropdown() {
-        String[] statuses = new String[]{"AVAILABLE", "FULL", "MAINTENANCE"};
+        String[] statuses = new String[]{"AVAILABLE", "MAINTENANCE"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, statuses);
         atStatus.setAdapter(adapter);
         atStatus.setText("AVAILABLE", false); // Default status

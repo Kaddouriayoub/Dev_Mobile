@@ -136,9 +136,6 @@ public class AdminWorkspacePreviewFragment extends Fragment {
                 case "AVAILABLE":
                     tvStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
                     break;
-                case "FULL":
-                    tvStatus.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                    break;
                 case "MAINTENANCE":
                     tvStatus.setTextColor(getResources().getColor(android.R.color.holo_orange_dark));
                     break;

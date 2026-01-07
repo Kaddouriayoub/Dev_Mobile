@@ -106,7 +106,10 @@ public class AddOrderFragment extends Fragment {
     }
 
     private void setupWorkspaceDropdown() {
-        RealmResults<Workspace> workspaces = realm.where(Workspace.class).findAll();
+        // Only show workspaces with AVAILABLE status (exclude MAINTENANCE)
+        RealmResults<Workspace> workspaces = realm.where(Workspace.class)
+                .equalTo("status", "AVAILABLE")
+                .findAll();
         workspaceList = new ArrayList<>(realm.copyFromRealm(workspaces));
 
         List<String> workspaceNames = new ArrayList<>();
