@@ -149,8 +149,8 @@ public class AdminWorkspacePreviewFragment extends Fragment {
             tvStatus.setText("N/A");
         }
 
-        // Capacity (available / total)
-        tvCapacity.setText(workspace.getAvailablePlaces() + "/" + workspace.getCapacity() + " places");
+        // Capacity
+        tvCapacity.setText(workspace.getCapacity() + " places");
 
         // Description
         String description = workspace.getDescription();

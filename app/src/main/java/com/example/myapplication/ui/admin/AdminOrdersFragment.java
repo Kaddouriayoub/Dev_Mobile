@@ -78,62 +78,12 @@ public class AdminOrdersFragment extends Fragment {
     }
 
     private void updateOrderStatus(Reservation reservation, ReservationStatus newStatus) {
-        ReservationStatus oldStatus = reservation.getStatus();
-        int numberOfPlaces = reservation.getNumberOfPlaces();
-        Long workspaceId = reservation.getWorkspaceId();
-
         realm.executeTransaction(r -> {
-            // Update the reservation status
             reservation.setStatus(newStatus);
-
-            // Update workspace available places based on status change
-            if (workspaceId != null) {
-                Workspace workspace = r.where(Workspace.class).equalTo("id", workspaceId).findFirst();
-                if (workspace != null) {
-                    int currentAvailable = workspace.getAvailablePlaces();
-                    int capacity = workspace.getCapacity();
-
-                    // If changing FROM confirmed TO non-confirmed: add places back
-                    if (oldStatus == ReservationStatus.CONFIRMED &&
-                        (newStatus == ReservationStatus.PENDING ||
-                         newStatus == ReservationStatus.REFUSED ||
-                         newStatus == ReservationStatus.CANCELLED)) {
-                        int newAvailable = Math.min(capacity, currentAvailable + numberOfPlaces);
-                        workspace.setAvailablePlaces(newAvailable);
-
-                        // Update status if places became available
-                        if (newAvailable > 0 && "FULL".equals(workspace.getStatus())) {
-                            workspace.setStatus("AVAILABLE");
-                        }
-                    }
-
-                    // If changing TO confirmed FROM non-confirmed: subtract places
-                    if (newStatus == ReservationStatus.CONFIRMED &&
-                        (oldStatus == ReservationStatus.PENDING ||
-                         oldStatus == ReservationStatus.REFUSED ||
-                         oldStatus == ReservationStatus.CANCELLED ||
-                         oldStatus == null)) {
-                        int newAvailable = Math.max(0, currentAvailable - numberOfPlaces);
-                        workspace.setAvailablePlaces(newAvailable);
-
-                        // Update status if full
-                        if (newAvailable == 0) {
-                            workspace.setStatus("FULL");
-                        }
-                    }
-                }
-            }
         });
 
         adapter.notifyDataSetChanged();
-
-        String message = "Status changed to " + newStatus.name();
-        if (newStatus == ReservationStatus.CONFIRMED) {
-            message += " (" + numberOfPlaces + " places reserved)";
-        } else if (oldStatus == ReservationStatus.CONFIRMED) {
-            message += " (" + numberOfPlaces + " places released)";
-        }
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Status changed to " + newStatus.name(), Toast.LENGTH_SHORT).show();
     }
 
     @Override

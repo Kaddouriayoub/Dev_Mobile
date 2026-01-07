@@ -62,14 +62,15 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 realm.executeTransaction(r -> {
                     Workspace firstWorkspace = workspaces.first();
                     if (firstWorkspace != null) {
+                        double pricePerHour = firstWorkspace.getPricePerHour();
+
                         // Create test order 1 - PENDING (client order)
                         Reservation order1 = r.createObject(Reservation.class, System.currentTimeMillis());
                         order1.setClientName("Ahmed Bennani");
-                        order1.setNumberOfPlaces(2);
-                        order1.setReservationDate("15/01/2026");
-                        order1.setStartTime("09:00");
-                        order1.setEndTime("17:00");
-                        order1.setTotalPrice(160.0);
+                        order1.setReservationDate("2026-1-15");
+                        order1.setStartTime("9");
+                        order1.setEndTime("12");
+                        order1.setTotalPrice(3 * pricePerHour); // 3 hours
                         order1.setStatus(ReservationStatus.PENDING);
                         order1.setAdminOrder(false);
                         order1.setWorkspace(firstWorkspace);
@@ -78,11 +79,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         // Create test order 2 - PENDING (client order)
                         Reservation order2 = r.createObject(Reservation.class, System.currentTimeMillis() + 1);
                         order2.setClientName("Fatima Alaoui");
-                        order2.setNumberOfPlaces(1);
-                        order2.setReservationDate("16/01/2026");
-                        order2.setStartTime("10:00");
-                        order2.setEndTime("14:00");
-                        order2.setTotalPrice(80.0);
+                        order2.setReservationDate("2026-1-16");
+                        order2.setStartTime("10");
+                        order2.setEndTime("14");
+                        order2.setTotalPrice(4 * pricePerHour); // 4 hours
                         order2.setStatus(ReservationStatus.PENDING);
                         order2.setAdminOrder(false);
                         order2.setWorkspace(firstWorkspace);
@@ -91,22 +91,14 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         // Create test order 3 - CONFIRMED
                         Reservation order3 = r.createObject(Reservation.class, System.currentTimeMillis() + 2);
                         order3.setClientName("Youssef Idrissi");
-                        order3.setNumberOfPlaces(3);
-                        order3.setReservationDate("14/01/2026");
-                        order3.setStartTime("08:00");
-                        order3.setEndTime("18:00");
-                        order3.setTotalPrice(300.0);
+                        order3.setReservationDate("2026-1-14");
+                        order3.setStartTime("8");
+                        order3.setEndTime("18");
+                        order3.setTotalPrice(10 * pricePerHour); // 10 hours
                         order3.setStatus(ReservationStatus.CONFIRMED);
                         order3.setAdminOrder(false);
                         order3.setWorkspace(firstWorkspace);
                         order3.setWorkspaceId(firstWorkspace.getId());
-
-                        // Update workspace available places for the confirmed order
-                        int newAvailable = firstWorkspace.getAvailablePlaces() - 3;
-                        firstWorkspace.setAvailablePlaces(Math.max(0, newAvailable));
-                        if (firstWorkspace.getAvailablePlaces() == 0) {
-                            firstWorkspace.setStatus("FULL");
-                        }
                     }
                 });
             }
