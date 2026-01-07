@@ -1,9 +1,9 @@
 package com.example.myapplication.ui.admin;
 
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -39,9 +39,18 @@ public class AdminDashboardActivity extends AppCompatActivity {
         txtProfile = findViewById(R.id.txt_profile);
 
         // Set Click Listeners
-        navWorkspaces.setOnClickListener(v -> loadFragment(new AdminWorkspacesFragment(), 1));
-        navOrders.setOnClickListener(v -> loadFragment(new AdminOrdersFragment(), 2));
-        navProfile.setOnClickListener(v -> loadFragment(new AdminProfileFragment(), 3));
+        navWorkspaces.setOnClickListener(v -> {
+            loadFragment(new AdminWorkspacesFragment());
+            updateNavUI(1);
+        });
+        navOrders.setOnClickListener(v -> {
+            loadFragment(new AdminOrdersFragment());
+            updateNavUI(2);
+        });
+        navProfile.setOnClickListener(v -> {
+            loadFragment(new AdminProfileFragment());
+            updateNavUI(3);
+        });
 
         // Create test data if needed
         createTestDataIfNeeded();
@@ -50,7 +59,37 @@ public class AdminDashboardActivity extends AppCompatActivity {
         forceCreatePendingOrders();
 
         // Load Default Fragment
-        loadFragment(new AdminWorkspacesFragment(), 1);
+        loadFragment(new AdminWorkspacesFragment());
+        updateNavUI(1);
+    }
+
+    private void updateNavUI(int selectedTab) {
+        int colorSelected = ContextCompat.getColor(this, R.color.colorPrimary);
+        int colorUnselected = ContextCompat.getColor(this, R.color.colorGrayText);
+
+        // Reset all
+        imgWorkspaces.setColorFilter(colorUnselected);
+        txtWorkspaces.setTextColor(colorUnselected);
+        imgOrders.setColorFilter(colorUnselected);
+        txtOrders.setTextColor(colorUnselected);
+        imgProfile.setColorFilter(colorUnselected);
+        txtProfile.setTextColor(colorUnselected);
+
+        // Highlight selected
+        switch (selectedTab) {
+            case 1:
+                imgWorkspaces.setColorFilter(colorSelected);
+                txtWorkspaces.setTextColor(colorSelected);
+                break;
+            case 2:
+                imgOrders.setColorFilter(colorSelected);
+                txtOrders.setTextColor(colorSelected);
+                break;
+            case 3:
+                imgProfile.setColorFilter(colorSelected);
+                txtProfile.setTextColor(colorSelected);
+                break;
+        }
     }
 
     private void createTestDataIfNeeded() {
@@ -169,40 +208,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void loadFragment(Fragment fragment, int tabIndex) {
+    private void loadFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit();
-
-        updateNavUI(tabIndex);
-    }
-
-    private void updateNavUI(int selectedTab) {
-        int colorSelected = ContextCompat.getColor(this, R.color.colorPrimary);
-        int colorUnselected = ContextCompat.getColor(this, R.color.colorGrayText);
-
-        // Reset all
-        imgWorkspaces.setColorFilter(colorUnselected);
-        txtWorkspaces.setTextColor(colorUnselected);
-        imgOrders.setColorFilter(colorUnselected);
-        txtOrders.setTextColor(colorUnselected);
-        imgProfile.setColorFilter(colorUnselected);
-        txtProfile.setTextColor(colorUnselected);
-
-        // Highlight selected
-        switch (selectedTab) {
-            case 1:
-                imgWorkspaces.setColorFilter(colorSelected);
-                txtWorkspaces.setTextColor(colorSelected);
-                break;
-            case 2:
-                imgOrders.setColorFilter(colorSelected);
-                txtOrders.setTextColor(colorSelected);
-                break;
-            case 3:
-                imgProfile.setColorFilter(colorSelected);
-                txtProfile.setTextColor(colorSelected);
-                break;
-        }
     }
 }
