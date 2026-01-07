@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,9 +62,27 @@ public class ClientWorkspaceAdapter
         holder.tvDescription.setText(workspace.getDescription());
         holder.tvPrice.setText(workspace.getPricePerHour() + "€/h");
 
+        // STATUS
+        String status = workspace.getStatus();
+        holder.tvStatus.setText(status);
+
+        switch (status) {
+            case "AVAILABLE":
+                holder.tvStatus.setBackgroundColor(Color.parseColor("#2E7D32"));
+                break;
+            case "FULL":
+                holder.tvStatus.setBackgroundColor(Color.parseColor("#C62828"));
+                break;
+            case "MAINTENANCE":
+                holder.tvStatus.setBackgroundColor(Color.parseColor("#F9A825"));
+                break;
+            default:
+                holder.tvStatus.setBackgroundColor(Color.GRAY);
+        }
+
         Realm realm = Realm.getDefaultInstance();
 
-        // 🔎 Check favorite state
+        // Favorite state
         Favorite favorite = realm.where(Favorite.class)
                 .equalTo("clientId", CLIENT_ID)
                 .equalTo("workspaceId", workspace.getId())
@@ -71,7 +90,7 @@ public class ClientWorkspaceAdapter
 
         holder.ivFavorite.setSelected(favorite != null);
 
-        // ❤️ Toggle favorite
+        // Toggle favorite
         holder.ivFavorite.setOnClickListener(v -> {
             realm.executeTransaction(r -> {
 
@@ -112,7 +131,7 @@ public class ClientWorkspaceAdapter
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView ivSpace, ivFavorite;
-        TextView tvLocation, tvDescription, tvPrice;
+        TextView tvLocation, tvDescription, tvPrice, tvStatus;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -121,6 +140,7 @@ public class ClientWorkspaceAdapter
             tvLocation = itemView.findViewById(R.id.tvLocation);
             tvDescription = itemView.findViewById(R.id.tvDescription);
             tvPrice = itemView.findViewById(R.id.tvPrice);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
         }
     }
 }
