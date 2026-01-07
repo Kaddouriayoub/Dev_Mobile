@@ -17,10 +17,19 @@ import io.realm.RealmResults;
 public class ClientWorkspaceAdapter
         extends RecyclerView.Adapter<ClientWorkspaceAdapter.ViewHolder> {
 
-    private RealmResults<Workspace> workspaces;
+    public interface OnItemClickListener {
+        void onItemClick(long workspaceId);
+    }
 
-    public ClientWorkspaceAdapter(RealmResults<Workspace> workspaces) {
+    private RealmResults<Workspace> workspaces;
+    private OnItemClickListener listener;
+
+    public ClientWorkspaceAdapter(
+            RealmResults<Workspace> workspaces,
+            OnItemClickListener listener
+    ) {
         this.workspaces = workspaces;
+        this.listener = listener;
     }
 
     @NonNull
@@ -42,20 +51,21 @@ public class ClientWorkspaceAdapter
         Workspace workspace = workspaces.get(position);
         if (workspace == null) return;
 
+        // ✅ TITLE = WORKSPACE NAME (FIX)
         holder.tvLocation.setText(
-                workspace.getType().name() + " · " + workspace.getCity()
+                workspace.getName() + " · " + workspace.getCity()
         );
 
+        // Description
         holder.tvDescription.setText(workspace.getDescription());
 
-        holder.tvPrice.setText(
-                workspace.getPricePerHour() + " $ / hour"
-        );
+        // Price
+        holder.tvPrice.setText(workspace.getPricePerHour() + "€/h");
 
-        // Favorite click (later)
-        holder.ivFavorite.setOnClickListener(v -> {
-            // TODO: add/remove favorite
-        });
+        // Click → details
+        holder.itemView.setOnClickListener(v ->
+                listener.onItemClick(workspace.getId())
+        );
     }
 
     @Override
