@@ -22,10 +22,18 @@ import com.example.myapplication.R;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.model.WorkspaceType;
 import com.google.android.material.textfield.TextInputEditText;
+import android.util.Log;
 import io.realm.Realm;
 import io.realm.RealmList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class AddEditWorkspaceFragment extends Fragment {
 
@@ -50,16 +58,18 @@ public class AddEditWorkspaceFragment extends Fragment {
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
-                    // Take persistable permission so the URI remains accessible
-                    try {
-                        requireContext().getContentResolver().takePersistableUriPermission(
-                            uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    } catch (SecurityException e) {
-                        // Some content providers don't support persistable permissions
+                    Log.d("ImagePicker", "Selected URI: " + uri.toString());
+                    // Copy image to internal storage for persistence
+                    String savedPath = copyImageToInternalStorage(uri);
+                    if (savedPath != null) {
+                        Log.d("ImagePicker", "Saved to: " + savedPath);
+                        selectedImageUris.add(savedPath);
+                        addImageToContainer(savedPath);
+                        Toast.makeText(getContext(), "Image added", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("ImagePicker", "Failed to copy image");
+                        Toast.makeText(getContext(), "Failed to save image", Toast.LENGTH_SHORT).show();
                     }
-
-                    selectedImageUris.add(uri.toString());
-                    addImageToContainer(uri.toString());
                 }
             }
         );
@@ -134,7 +144,7 @@ public class AddEditWorkspaceFragment extends Fragment {
             FrameLayout.LayoutParams.MATCH_PARENT
         ));
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setImageURI(Uri.parse(imageUri));
+        loadImageIntoView(imageView, imageUri);
 
         // Create delete button overlay
         ImageView deleteBtn = new ImageView(requireContext());
@@ -166,8 +176,103 @@ public class AddEditWorkspaceFragment extends Fragment {
         imagesContainer.addView(imageFrame, 1);
     }
 
+    private String copyImageToInternalStorage(Uri uri) {
+        try {
+            // Create workspace_images directory if it doesn't exist
+            File imagesDir = new File(requireContext().getFilesDir(), "workspace_images");
+            if (!imagesDir.exists()) {
+                boolean created = imagesDir.mkdirs();
+                Log.d("ImageCopy", "Created directory: " + created + " at " + imagesDir.getAbsolutePath());
+            }
+
+            // Generate unique filename
+            String fileName = "workspace_" + UUID.randomUUID().toString() + ".jpg";
+            File destFile = new File(imagesDir, fileName);
+            Log.d("ImageCopy", "Destination file: " + destFile.getAbsolutePath());
+
+            // Copy the image
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
+            if (inputStream == null) {
+                Log.e("ImageCopy", "Failed to open input stream");
+                return null;
+            }
+
+            OutputStream outputStream = new FileOutputStream(destFile);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            long totalBytes = 0;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                totalBytes += bytesRead;
+            }
+
+            inputStream.close();
+            outputStream.close();
+
+            Log.d("ImageCopy", "Copied " + totalBytes + " bytes. File exists: " + destFile.exists());
+
+            // Return the absolute file path (not URI)
+            String filePath = destFile.getAbsolutePath();
+            Log.d("ImageCopy", "Returning path: " + filePath);
+            return filePath;
+        } catch (Exception e) {
+            Log.e("ImageCopy", "Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    private void loadImageIntoView(ImageView imageView, String imagePath) {
+        try {
+            Log.d("LoadImage", "Loading: " + imagePath);
+
+            // Check if it's an absolute file path (starts with /)
+            if (imagePath.startsWith("/")) {
+                File file = new File(imagePath);
+                if (file.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                    if (bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                        Log.d("LoadImage", "Loaded from file path successfully");
+                        return;
+                    }
+                }
+                Log.e("LoadImage", "File does not exist: " + imagePath);
+            } else {
+                // It's a URI
+                Uri uri = Uri.parse(imagePath);
+
+                if ("file".equals(uri.getScheme())) {
+                    File file = new File(uri.getPath());
+                    if (file.exists()) {
+                        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                        if (bitmap != null) {
+                            imageView.setImageBitmap(bitmap);
+                            return;
+                        }
+                    }
+                } else if ("content".equals(uri.getScheme())) {
+                    InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
+                    if (inputStream != null) {
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        inputStream.close();
+                        if (bitmap != null) {
+                            imageView.setImageBitmap(bitmap);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            imageView.setImageResource(R.drawable.ic_launcher_background);
+        } catch (Exception e) {
+            Log.e("LoadImage", "Error: " + e.getMessage());
+            imageView.setImageResource(R.drawable.ic_launcher_background);
+        }
     }
 
     private void loadWorkspaceData(Long id) {
@@ -243,12 +348,30 @@ public class AddEditWorkspaceFragment extends Fragment {
             }
 
             if (workspace != null) {
+                boolean isNewWorkspace = (workspaceId == null);
+                int capacityValue = capacityStr.isEmpty() ? 0 : Integer.parseInt(capacityStr);
+
                 workspace.setName(name);
                 workspace.setDescription(description);
                 workspace.setAddress(location);
                 workspace.setCity(location);
                 workspace.setPricePerHour(Double.parseDouble(priceStr));
-                workspace.setCapacity(capacityStr.isEmpty() ? 0 : Integer.parseInt(capacityStr));
+                workspace.setCapacity(capacityValue);
+
+                // For new workspaces, set availablePlaces = capacity
+                // For existing workspaces, adjust availablePlaces if capacity changed
+                if (isNewWorkspace) {
+                    workspace.setAvailablePlaces(capacityValue);
+                } else {
+                    // If capacity increased, add the difference to available
+                    int oldCapacity = workspace.getCapacity();
+                    int oldAvailable = workspace.getAvailablePlaces();
+                    if (capacityValue != oldCapacity) {
+                        int diff = capacityValue - oldCapacity;
+                        workspace.setAvailablePlaces(Math.max(0, oldAvailable + diff));
+                    }
+                }
+
                 try {
                     workspace.setType(WorkspaceType.valueOf(typeStr));
                 } catch (IllegalArgumentException e) {
@@ -256,18 +379,22 @@ public class AddEditWorkspaceFragment extends Fragment {
                 }
                 workspace.setStatus(statusStr.isEmpty() ? "AVAILABLE" : statusStr);
 
-                // Save images
+                // Save images - need to handle RealmList properly
                 RealmList<String> images = workspace.getImages();
                 if (images == null) {
                     images = new RealmList<>();
+                    workspace.setImages(images);
                 }
                 images.clear();
-                images.addAll(selectedImageUris);
-                workspace.setImages(images);
+                for (String uri : selectedImageUris) {
+                    images.add(uri);
+                    Log.d("SaveWorkspace", "Saving image: " + uri);
+                }
+                Log.d("SaveWorkspace", "Total images saved: " + images.size());
             }
         });
 
-        Toast.makeText(getContext(), "Workspace Saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Workspace Saved (" + selectedImageUris.size() + " images)", Toast.LENGTH_SHORT).show();
         getParentFragmentManager().popBackStack();
     }
 

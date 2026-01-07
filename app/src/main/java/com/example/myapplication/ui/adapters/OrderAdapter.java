@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
 import io.realm.RealmResults;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> {
@@ -39,27 +40,61 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Reservation reservation = reservations.get(position);
         if (reservation != null) {
-            holder.tvOrderId.setText("Order #" + reservation.getId());
-            
+            // Order ID with admin badge if applicable
+            String orderId = "Order #" + reservation.getId();
+            if (reservation.isAdminOrder()) {
+                orderId += " (Admin)";
+            }
+            holder.tvOrderId.setText(orderId);
+
+            // Status with color coding
             if (reservation.getStatus() != null) {
-                holder.tvStatus.setText(reservation.getStatus().name());
+                ReservationStatus status = reservation.getStatus();
+                holder.tvStatus.setText(status.name());
+
+                switch (status) {
+                    case CONFIRMED:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
+                        break;
+                    case PENDING:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                        break;
+                    case REFUSED:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_refused);
+                        break;
+                    case CANCELLED:
+                        holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                        break;
+                }
             }
 
-            // Using relationships
-            if (reservation.getClient() != null) {
-                // Client doesn't have name, maybe link to User later? 
+            // Client name
+            if (reservation.getClientName() != null && !reservation.getClientName().isEmpty()) {
+                holder.tvClientName.setText(reservation.getClientName());
+            } else if (reservation.getClient() != null) {
                 holder.tvClientName.setText("Client #" + reservation.getClient().getId());
-            } else {
+            } else if (reservation.getClientId() != null) {
                 holder.tvClientName.setText("Client #" + reservation.getClientId());
+            } else {
+                holder.tvClientName.setText("Unknown Client");
             }
 
+            // Workspace name
             if (reservation.getWorkspace() != null) {
                 holder.tvWorkspaceName.setText(reservation.getWorkspace().getName());
+            } else {
+                holder.tvWorkspaceName.setText("Unknown Workspace");
             }
 
+            // Number of places
+            int places = reservation.getNumberOfPlaces();
+            holder.tvPlaces.setText(places + " place" + (places > 1 ? "s" : ""));
+
+            // Price and date
             holder.tvTotalPrice.setText(String.format("$%.2f", reservation.getTotalPrice()));
             holder.tvDate.setText(reservation.getReservationDate());
 
+            // Change status button
             holder.btnChangeStatus.setOnClickListener(v -> listener.onChangeStatus(reservation));
         }
     }
@@ -70,7 +105,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvOrderId, tvStatus, tvClientName, tvWorkspaceName, tvTotalPrice, tvDate;
+        TextView tvOrderId, tvStatus, tvClientName, tvWorkspaceName, tvPlaces, tvTotalPrice, tvDate;
         Button btnChangeStatus;
 
         public ViewHolder(@NonNull View itemView) {
@@ -79,6 +114,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             tvStatus = itemView.findViewById(R.id.tv_status);
             tvClientName = itemView.findViewById(R.id.tv_client_name);
             tvWorkspaceName = itemView.findViewById(R.id.tv_workspace_name);
+            tvPlaces = itemView.findViewById(R.id.tv_places);
             tvTotalPrice = itemView.findViewById(R.id.tv_total_price);
             tvDate = itemView.findViewById(R.id.tv_date);
             btnChangeStatus = itemView.findViewById(R.id.btn_change_status);

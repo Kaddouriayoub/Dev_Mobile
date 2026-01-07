@@ -12,6 +12,9 @@ public class Reservation extends RealmObject {
     private String endTime;
     private String status; // Enum as String
     private double totalPrice;
+    private int numberOfPlaces; // Number of places reserved
+    private boolean isAdminOrder; // True if created by admin (auto-confirmed)
+    private String clientName; // For admin orders without client account
     private Long workspaceId;
     private Workspace workspace; // Reference to Workspace object
     private Long clientId;
@@ -49,4 +52,13 @@ public class Reservation extends RealmObject {
 
     public Client getClient() { return client; }
     public void setClient(Client client) { this.client = client; }
+
+    public int getNumberOfPlaces() { return numberOfPlaces; }
+    public void setNumberOfPlaces(int numberOfPlaces) { this.numberOfPlaces = numberOfPlaces; }
+
+    public boolean isAdminOrder() { return isAdminOrder; }
+    public void setAdminOrder(boolean adminOrder) { isAdminOrder = adminOrder; }
+
+    public String getClientName() { return clientName; }
+    public void setClientName(String clientName) { this.clientName = clientName; }
 }

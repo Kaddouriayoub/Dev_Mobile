@@ -11,7 +11,8 @@ public class Workspace extends RealmObject {
     private String name;
     private String description;
     private String type; // Enum as String
-    private int capacity;
+    private int capacity; // Total capacity
+    private int availablePlaces; // Free places (updated based on confirmed orders)
     private double pricePerHour;
     private String city;
     private String address;
@@ -35,6 +36,9 @@ public class Workspace extends RealmObject {
 
     public int getCapacity() { return capacity; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
+
+    public int getAvailablePlaces() { return availablePlaces; }
+    public void setAvailablePlaces(int availablePlaces) { this.availablePlaces = availablePlaces; }
 
     public double getPricePerHour() { return pricePerHour; }
     public void setPricePerHour(double pricePerHour) { this.pricePerHour = pricePerHour; }

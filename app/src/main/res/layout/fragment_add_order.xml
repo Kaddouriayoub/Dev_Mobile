@@ -37,19 +37,45 @@
                 android:inputType="none"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Select Client -->
+        <!-- Available Places Info -->
+        <TextView
+            android:id="@+id/tv_available_places"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available places: -"
+            android:textSize="14sp"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"/>
+
+        <!-- Number of Places -->
         <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Select Client"
+            android:hint="Number of Places"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_marginBottom="16dp">
 
-            <AutoCompleteTextView
-                android:id="@+id/at_client"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_number_of_places"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"/>
+                android:inputType="number"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Client Name (for admin orders) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Client Name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_client_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Date Selection -->
