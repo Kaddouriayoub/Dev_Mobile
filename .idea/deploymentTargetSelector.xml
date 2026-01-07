@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="ClientDashboardActivity">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-01-07T14:15:09.613916618Z">
+        <DropdownSelection timestamp="2026-01-07T16:13:32.432695342Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/myrh/.android/avd/Pixel_9a.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=RZCY12MMXTV" />
             </handle>
           </Target>
         </DropdownSelection>

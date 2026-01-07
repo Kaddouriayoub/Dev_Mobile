@@ -10,8 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.model.Favorite;
 import com.example.myapplication.model.Workspace;
 
+import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class ClientWorkspaceAdapter
@@ -20,6 +22,8 @@ public class ClientWorkspaceAdapter
     public interface OnItemClickListener {
         void onItemClick(long workspaceId);
     }
+
+    private static final long CLIENT_ID = 0L;
 
     private RealmResults<Workspace> workspaces;
     private OnItemClickListener listener;
@@ -51,21 +55,53 @@ public class ClientWorkspaceAdapter
         Workspace workspace = workspaces.get(position);
         if (workspace == null) return;
 
-        // ✅ TITLE = WORKSPACE NAME (FIX)
         holder.tvLocation.setText(
                 workspace.getName() + " · " + workspace.getCity()
         );
-
-        // Description
         holder.tvDescription.setText(workspace.getDescription());
-
-        // Price
         holder.tvPrice.setText(workspace.getPricePerHour() + "€/h");
 
-        // Click → details
+        Realm realm = Realm.getDefaultInstance();
+
+        // 🔎 Check favorite state
+        Favorite favorite = realm.where(Favorite.class)
+                .equalTo("clientId", CLIENT_ID)
+                .equalTo("workspaceId", workspace.getId())
+                .findFirst();
+
+        holder.ivFavorite.setSelected(favorite != null);
+
+        // ❤️ Toggle favorite
+        holder.ivFavorite.setOnClickListener(v -> {
+            realm.executeTransaction(r -> {
+
+                Favorite existing = r.where(Favorite.class)
+                        .equalTo("clientId", CLIENT_ID)
+                        .equalTo("workspaceId", workspace.getId())
+                        .findFirst();
+
+                if (existing != null) {
+                    existing.deleteFromRealm();
+                    holder.ivFavorite.setSelected(false);
+                } else {
+                    Number maxId = r.where(Favorite.class).max("id");
+                    long nextId = (maxId == null) ? 1 : maxId.longValue() + 1;
+
+                    Favorite f = r.createObject(Favorite.class, nextId);
+                    f.setClientId(CLIENT_ID);
+                    f.setWorkspaceId(workspace.getId());
+                    f.setCreatedAt(String.valueOf(System.currentTimeMillis()));
+
+                    holder.ivFavorite.setSelected(true);
+                }
+            });
+        });
+
         holder.itemView.setOnClickListener(v ->
                 listener.onItemClick(workspace.getId())
         );
+
+        realm.close();
     }
 
     @Override
