@@ -1,66 +1,108 @@
 package com.example.myapplication.ui.client.fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.model.Reservation;
+import com.example.myapplication.ui.adapters.PastReservationAdapter;
+import com.example.myapplication.ui.adapters.UpcomingReservationAdapter;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ReservationFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class ReservationFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private RecyclerView rvUpcoming, rvPast;
+    private TextView txtUpcomingCount, txtPastCount;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private Realm realm;
 
     public ReservationFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ReservationFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ReservationFragment newInstance(String param1, String param2) {
-        ReservationFragment fragment = new ReservationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+        super(R.layout.fragment_reservation);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        rvUpcoming = view.findViewById(R.id.rvUpcoming);
+        rvPast = view.findViewById(R.id.rvPast);
+        txtUpcomingCount = view.findViewById(R.id.txtUpcomingCount);
+        txtPastCount = view.findViewById(R.id.txtPastCount);
+
+        rvUpcoming.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvPast.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        realm = Realm.getDefaultInstance();
+
+        loadReservationsFromRealm(0L); // clientId = 0
+    }
+
+    private void loadReservationsFromRealm(long clientId) {
+        RealmResults<Reservation> results = realm.where(Reservation.class)
+                .equalTo("clientId", clientId)
+                .findAll(); // you can sort later if you want
+
+        List<Reservation> upcoming = new ArrayList<>();
+        List<Reservation> past = new ArrayList<>();
+
+        // Assumption: reservationDate format is "yyyy-MM-dd"
+        // If yours is different, tell me the format and I’ll adjust.
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date today = new Date();
+
+        for (Reservation r : results) {
+            Date d = parseSafe(df, r.getReservationDate());
+            if (d == null) continue;
+
+            // if date >= today => upcoming, else past
+            if (!d.before(stripTime(today))) upcoming.add(realm.copyFromRealm(r));
+            else past.add(realm.copyFromRealm(r));
         }
+
+        txtUpcomingCount.setText(String.valueOf(upcoming.size()));
+        txtPastCount.setText(String.valueOf(past.size()));
+
+        // TODO: plug your adapters here (different click behavior)
+        rvUpcoming.setAdapter(new UpcomingReservationAdapter(upcoming, reservation -> {
+            // UPCOMING click behavior
+            // e.g. open details, allow cancel, show QR, etc.
+        }));
+
+        rvPast.setAdapter(new PastReservationAdapter(past, reservation -> {
+            // PAST click behavior
+            // e.g. open receipt, allow review, etc.
+        }));
+
+    }
+
+    private Date parseSafe(SimpleDateFormat df, String value) {
+        try { return df.parse(value); } catch (ParseException e) { return null; }
+    }
+
+    private Date stripTime(Date d) {
+        // today at 00:00 for fair compare
+        return new Date(d.getYear(), d.getMonth(), d.getDate());
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_reservation, container, false);
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (realm != null && !realm.isClosed()) realm.close();
     }
 }
