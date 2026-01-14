@@ -26,6 +26,7 @@ import com.example.myapplication.model.Review;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.client.BookingActivity;
 import com.example.myapplication.ui.adapters.ReviewAdapter;
+import com.example.myapplication.utils.SessionManager;
 
 import java.io.File;
 import java.util.List;
@@ -37,7 +38,8 @@ import io.realm.RealmResults;
 public class WorkspaceDetailsFragment extends Fragment {
 
     private static final String ARG_ID = "workspace_id";
-    private static final long CLIENT_ID = 0L;
+    private SessionManager sessionManager;
+//    private static final long CLIENT_ID = 0L;
 
     private Realm realm;
 
@@ -47,7 +49,7 @@ public class WorkspaceDetailsFragment extends Fragment {
             @NonNull LayoutInflater inflater,
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-
+        sessionManager = new SessionManager(requireContext());
         View view = inflater.inflate(R.layout.fragment_workspace_details, container, false);
 
         long workspaceId = getArguments() != null ? getArguments().getLong(ARG_ID) : -1L;
@@ -100,7 +102,7 @@ public class WorkspaceDetailsFragment extends Fragment {
         // ===== FAVORITE =====
         ImageButton fav = view.findViewById(R.id.btnFavorite);
         Favorite f = realm.where(Favorite.class)
-                .equalTo("clientId", CLIENT_ID)
+                .equalTo("clientId", sessionManager.getUserId())
                 .equalTo("workspaceId", workspaceId)
                 .findFirst();
         fav.setSelected(f != null);
@@ -108,7 +110,7 @@ public class WorkspaceDetailsFragment extends Fragment {
         fav.setOnClickListener(v -> {
             realm.executeTransaction(r -> {
                 Favorite existing = r.where(Favorite.class)
-                        .equalTo("clientId", CLIENT_ID)
+                        .equalTo("clientId", sessionManager.getUserId())
                         .equalTo("workspaceId", workspaceId)
                         .findFirst();
                 if (existing != null) {
@@ -116,7 +118,7 @@ public class WorkspaceDetailsFragment extends Fragment {
                     fav.setSelected(false);
                 } else {
                     Favorite nf = r.createObject(Favorite.class, System.currentTimeMillis());
-                    nf.setClientId(CLIENT_ID);
+                    nf.setClientId(sessionManager.getUserId());
                     nf.setWorkspaceId(workspaceId);
                     fav.setSelected(true);
                 }
@@ -153,11 +155,16 @@ public class WorkspaceDetailsFragment extends Fragment {
             txtCount.setText("0 avis");
 
             // set max to 1 (avoid division by 0) and progress to 0
-            pb5.setMax(1); pb5.setProgress(0);
-            pb4.setMax(1); pb4.setProgress(0);
-            pb3.setMax(1); pb3.setProgress(0);
-            pb2.setMax(1); pb2.setProgress(0);
-            pb1.setMax(1); pb1.setProgress(0);
+            pb5.setMax(1);
+            pb5.setProgress(0);
+            pb4.setMax(1);
+            pb4.setProgress(0);
+            pb3.setMax(1);
+            pb3.setProgress(0);
+            pb2.setMax(1);
+            pb2.setProgress(0);
+            pb1.setMax(1);
+            pb1.setProgress(0);
             return;
         }
 
@@ -173,11 +180,21 @@ public class WorkspaceDetailsFragment extends Fragment {
             sum += rating;
 
             switch (rating) {
-                case 1: c1++; break;
-                case 2: c2++; break;
-                case 3: c3++; break;
-                case 4: c4++; break;
-                case 5: c5++; break;
+                case 1:
+                    c1++;
+                    break;
+                case 2:
+                    c2++;
+                    break;
+                case 3:
+                    c3++;
+                    break;
+                case 4:
+                    c4++;
+                    break;
+                case 5:
+                    c5++;
+                    break;
             }
         }
 
@@ -188,11 +205,16 @@ public class WorkspaceDetailsFragment extends Fragment {
         txtCount.setText(total + (total <= 1 ? " avis" : " avis"));
 
         // progress bars: set max to total so proportions display nicely
-        pb5.setMax(total); pb5.setProgress(c5);
-        pb4.setMax(total); pb4.setProgress(c4);
-        pb3.setMax(total); pb3.setProgress(c3);
-        pb2.setMax(total); pb2.setProgress(c2);
-        pb1.setMax(total); pb1.setProgress(c1);
+        pb5.setMax(total);
+        pb5.setProgress(c5);
+        pb4.setMax(total);
+        pb4.setProgress(c4);
+        pb3.setMax(total);
+        pb3.setProgress(c3);
+        pb2.setMax(total);
+        pb2.setProgress(c2);
+        pb1.setMax(total);
+        pb1.setProgress(c1);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.example.myapplication.ui.adapters;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Favorite;
 import com.example.myapplication.model.Workspace;
+import com.example.myapplication.utils.SessionManager;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -24,17 +27,21 @@ public class ClientWorkspaceAdapter
         void onItemClick(long workspaceId);
     }
 
-    private static final long CLIENT_ID = 0L;
+//    private static final long CLIENT_ID = 0L;
 
     private RealmResults<Workspace> workspaces;
     private OnItemClickListener listener;
+    private Context context;
+    private SessionManager sessionManager;
 
     public ClientWorkspaceAdapter(
+            Context context,
             RealmResults<Workspace> workspaces,
             OnItemClickListener listener
     ) {
         this.workspaces = workspaces;
         this.listener = listener;
+        this.context = context;
     }
 
     @NonNull
@@ -54,6 +61,7 @@ public class ClientWorkspaceAdapter
             int position
     ) {
         Workspace workspace = workspaces.get(position);
+        sessionManager = new SessionManager(context);
         if (workspace == null) return;
 
         holder.tvLocation.setText(
@@ -84,7 +92,7 @@ public class ClientWorkspaceAdapter
 
         // Favorite state
         Favorite favorite = realm.where(Favorite.class)
-                .equalTo("clientId", CLIENT_ID)
+                .equalTo("clientId", sessionManager.getUserId())
                 .equalTo("workspaceId", workspace.getId())
                 .findFirst();
 
@@ -95,7 +103,7 @@ public class ClientWorkspaceAdapter
             realm.executeTransaction(r -> {
 
                 Favorite existing = r.where(Favorite.class)
-                        .equalTo("clientId", CLIENT_ID)
+                        .equalTo("clientId", sessionManager.getUserId())
                         .equalTo("workspaceId", workspace.getId())
                         .findFirst();
 
@@ -107,7 +115,7 @@ public class ClientWorkspaceAdapter
                     long nextId = (maxId == null) ? 1 : maxId.longValue() + 1;
 
                     Favorite f = r.createObject(Favorite.class, nextId);
-                    f.setClientId(CLIENT_ID);
+                    f.setClientId(sessionManager.getUserId());
                     f.setWorkspaceId(workspace.getId());
                     f.setCreatedAt(String.valueOf(System.currentTimeMillis()));
 
