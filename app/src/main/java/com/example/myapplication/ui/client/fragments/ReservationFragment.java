@@ -15,17 +15,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Review;
 import com.example.myapplication.ui.adapters.PastReservationAdapter;
 import com.example.myapplication.ui.adapters.UpcomingReservationAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -55,26 +53,103 @@ public class ReservationFragment extends Fragment {
         rvPast.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         realm = Realm.getDefaultInstance();
+
+        // Check and mark completed reservations before loading
+        markCompletedReservations();
+
         loadReservationsFromRealm(CLIENT_ID);
     }
 
+    private void markCompletedReservations() {
+        // Get current date and time
+        Calendar now = Calendar.getInstance();
+        int currentYear = now.get(Calendar.YEAR);
+        int currentMonth = now.get(Calendar.MONTH) + 1; // Calendar months are 0-based
+        int currentDay = now.get(Calendar.DAY_OF_MONTH);
+        int currentHour = now.get(Calendar.HOUR_OF_DAY);
+
+        // Find all CONFIRMED client reservations (not admin orders)
+        RealmResults<Reservation> confirmedReservations = realm.where(Reservation.class)
+                .equalTo("status", ReservationStatus.CONFIRMED.name())
+                .equalTo("clientId", CLIENT_ID)
+                .equalTo("isAdminOrder", false)  // Only client's own reservations
+                .findAll();
+
+        realm.executeTransaction(r -> {
+            for (Reservation reservation : confirmedReservations) {
+                if (isReservationCompleted(reservation, currentYear, currentMonth, currentDay, currentHour)) {
+                    reservation.setStatus(ReservationStatus.COMPLETED);
+                }
+            }
+        });
+    }
+
+    private boolean isReservationCompleted(Reservation reservation, int currentYear, int currentMonth, int currentDay, int currentHour) {
+        try {
+            // Parse reservation date (format: "YYYY-M-D")
+            String dateStr = reservation.getReservationDate();
+            if (dateStr == null) return false;
+
+            String[] dateParts = dateStr.split("-");
+            if (dateParts.length != 3) return false;
+
+            int resYear = Integer.parseInt(dateParts[0]);
+            int resMonth = Integer.parseInt(dateParts[1]);
+            int resDay = Integer.parseInt(dateParts[2]);
+
+            // Parse end time
+            String endTimeStr = reservation.getEndTime();
+            if (endTimeStr == null) return false;
+            int endHour = Integer.parseInt(endTimeStr.replace(":00", ""));
+
+            // Compare dates
+            if (resYear < currentYear) return true;
+            if (resYear > currentYear) return false;
+
+            if (resMonth < currentMonth) return true;
+            if (resMonth > currentMonth) return false;
+
+            if (resDay < currentDay) return true;
+            if (resDay > currentDay) return false;
+
+            // Same day - check if end time has passed
+            return endHour <= currentHour;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void loadReservationsFromRealm(long clientId) {
+        // Only load client reservations (not admin orders)
         RealmResults<Reservation> results = realm.where(Reservation.class)
                 .equalTo("clientId", clientId)
+                .equalTo("isAdminOrder", false)  // Only client's own reservations
                 .findAll();
 
         List<Reservation> upcoming = new ArrayList<>();
         List<Reservation> past = new ArrayList<>();
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        Date today = new Date();
-
         for (Reservation r : results) {
-            Date d = parseSafe(df, r.getReservationDate());
-            if (d == null) continue;
+            ReservationStatus status = r.getStatus();
+            if (status == null) {
+                status = ReservationStatus.PENDING;
+            }
 
-            if (!d.before(stripTime(today))) upcoming.add(realm.copyFromRealm(r));
-            else past.add(realm.copyFromRealm(r));
+            // Upcoming: PENDING or CONFIRMED
+            // Past (History): REFUSED or COMPLETED
+            // CANCELLED should never appear for client reservations
+            switch (status) {
+                case PENDING:
+                case CONFIRMED:
+                    upcoming.add(realm.copyFromRealm(r));
+                    break;
+                case REFUSED:
+                case COMPLETED:
+                    past.add(realm.copyFromRealm(r));
+                    break;
+                // CANCELLED is only for admin orders, ignore it here
+            }
         }
 
         txtUpcomingCount.setText(String.valueOf(upcoming.size()));
@@ -96,26 +171,35 @@ public class ReservationFragment extends Fragment {
     private void handlePastReservationClick(Reservation reservation) {
         long workspaceId = reservation.getWorkspaceId();
 
-//        long startMs = toMillis(reservation.getReservationDate(), reservation.getStartTime());
-//        long endMs   = toMillis(reservation.getReservationDate(), reservation.getEndTime());
+        // Only allow reviews for COMPLETED reservations
+        ReservationStatus status = reservation.getStatus();
+        if (status == null) {
+            status = ReservationStatus.COMPLETED;
+        }
 
-        Realm r = Realm.getDefaultInstance();
-
-        // createdAt is stored as String -> compare as String (milliseconds)
-        Review existing = r.where(Review.class)
-                .equalTo("reservationId", reservation.getId())
-//                .equalTo("clientId", CLIENT_ID)
-//                .equalTo("workspaceId", workspaceId)
-//                .greaterThanOrEqualTo("createdAt", String.valueOf(startMs))
-//                .lessThanOrEqualTo("createdAt", String.valueOf(endMs))
-                .findFirst();
-
-        r.close();
-
-        if (existing == null) {
-            showReviewDialog(workspaceId, reservation.getId());
-        } else {
+        // If REFUSED, just open workspace details (no review allowed)
+        if (status == ReservationStatus.REFUSED) {
             openWorkspaceDetails(workspaceId);
+            return;
+        }
+
+        // For COMPLETED reservations, check if review already exists
+        if (status == ReservationStatus.COMPLETED) {
+            Realm r = Realm.getDefaultInstance();
+
+            Review existing = r.where(Review.class)
+                    .equalTo("reservationId", reservation.getId())
+                    .findFirst();
+
+            r.close();
+
+            if (existing == null) {
+                // No review yet, show rating dialog
+                showReviewDialog(workspaceId, reservation.getId());
+            } else {
+                // Review already given, just open workspace details
+                openWorkspaceDetails(workspaceId);
+            }
         }
     }
 
@@ -166,26 +250,14 @@ public class ReservationFragment extends Fragment {
         r.close();
     }
 
-    private long toMillis(String date, String time) {
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-            Date d = df.parse(date + " " + time);
-            return d != null ? d.getTime() : 0L;
-        } catch (Exception e) {
-            return 0L;
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload reservations when returning to this fragment
+        if (realm != null && !realm.isClosed()) {
+            markCompletedReservations();
+            loadReservationsFromRealm(CLIENT_ID);
         }
-    }
-
-    private Date parseSafe(SimpleDateFormat df, String value) {
-        try {
-            return df.parse(value);
-        } catch (ParseException e) {
-            return null;
-        }
-    }
-
-    private Date stripTime(Date d) {
-        return new Date(d.getYear(), d.getMonth(), d.getDate());
     }
 
     @Override

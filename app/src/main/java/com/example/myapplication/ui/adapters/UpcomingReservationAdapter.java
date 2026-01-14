@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
 import com.google.android.material.chip.Chip;
 
@@ -61,7 +63,29 @@ public class UpcomingReservationAdapter extends RecyclerView.Adapter<UpcomingRes
                 (r.getEndTime() != null ? r.getEndTime() : ""));
         h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "€");
 
-        h.chipStatus.setText("À venir");
+        // Display real status with colored text only
+        ReservationStatus status = r.getStatus();
+        if (status == null) {
+            status = ReservationStatus.PENDING;
+        }
+
+        // Set transparent background for all
+        h.chipStatus.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
+
+        switch (status) {
+            case PENDING:
+                h.chipStatus.setText("En attente");
+                h.chipStatus.setTextColor(Color.parseColor("#FF9800")); // Orange
+                break;
+            case CONFIRMED:
+                h.chipStatus.setText("Confirmé");
+                h.chipStatus.setTextColor(Color.parseColor("#4CAF50")); // Green
+                break;
+            default:
+                h.chipStatus.setText(status.name());
+                h.chipStatus.setTextColor(Color.GRAY);
+                break;
+        }
 
         h.itemView.setOnClickListener(v -> listener.onClick(r));
     }

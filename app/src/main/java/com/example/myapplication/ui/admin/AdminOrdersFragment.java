@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,8 +31,12 @@ public class AdminOrdersFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private ImageView btnAdd;
+    private Spinner spinnerFilter;
     private Realm realm;
     private OrderAdapter adapter;
+
+    private String[] filterOptions = {"Tous", "En attente", "Confirmé", "Refusé", "Annulé", "Terminé"};
+    private ReservationStatus currentFilter = null; // null means "ALL"
 
     @Nullable
     @Override
@@ -40,6 +47,7 @@ public class AdminOrdersFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         btnAdd = view.findViewById(R.id.btn_add_order);
+        spinnerFilter = view.findViewById(R.id.spinner_status_filter);
 
         btnAdd.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -53,9 +61,54 @@ public class AdminOrdersFragment extends Fragment {
         // Check and mark completed reservations before loading
         markCompletedReservations();
 
+        // Setup spinner
+        setupFilterSpinner();
+
         loadOrders();
 
         return view;
+    }
+
+    private void setupFilterSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                filterOptions
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFilter.setAdapter(adapter);
+
+        spinnerFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0: // Tous
+                        currentFilter = null;
+                        break;
+                    case 1: // En attente
+                        currentFilter = ReservationStatus.PENDING;
+                        break;
+                    case 2: // Confirmé
+                        currentFilter = ReservationStatus.CONFIRMED;
+                        break;
+                    case 3: // Refusé
+                        currentFilter = ReservationStatus.REFUSED;
+                        break;
+                    case 4: // Annulé
+                        currentFilter = ReservationStatus.CANCELLED;
+                        break;
+                    case 5: // Terminé
+                        currentFilter = ReservationStatus.COMPLETED;
+                        break;
+                }
+                loadOrders();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
     }
 
     private void markCompletedReservations() {
@@ -126,14 +179,25 @@ public class AdminOrdersFragment extends Fragment {
         SessionManager sessionManager = new SessionManager(getContext());
         Long currentAdminId = sessionManager.getUserId();
 
-        // Filter reservations by workspaces owned by current admin using link query
-        RealmResults<Reservation> reservations = realm.where(Reservation.class)
-                .equalTo("workspace.adminId", currentAdminId)
-                .sort("id", Sort.DESCENDING)
-                .findAll();
+        // Build query based on filter
+        RealmResults<Reservation> reservations;
+
+        if (currentFilter == null) {
+            // Show all orders
+            reservations = realm.where(Reservation.class)
+                    .equalTo("workspace.adminId", currentAdminId)
+                    .sort("id", Sort.DESCENDING)
+                    .findAll();
+        } else {
+            // Filter by specific status
+            reservations = realm.where(Reservation.class)
+                    .equalTo("workspace.adminId", currentAdminId)
+                    .equalTo("status", currentFilter.name())
+                    .sort("id", Sort.DESCENDING)
+                    .findAll();
+        }
 
         adapter = new OrderAdapter(getContext(), reservations, this::showStatusChangeDialog);
-
         recyclerView.setAdapter(adapter);
     }
 
@@ -149,7 +213,21 @@ public class AdminOrdersFragment extends Fragment {
                 allowedStatuses = new String[]{"CONFIRMED", "REFUSED"};
                 break;
             case CONFIRMED:
-                // CONFIRMED can only become CANCELLED
+                // CONFIRMED can only become CANCELLED if:
+                // 1. It's an admin order (isAdminOrder = true)
+                // 2. The reservation time hasn't started yet
+                if (!reservation.isAdminOrder()) {
+                    // Client reservations cannot be cancelled by admin after confirmation
+                    Toast.makeText(getContext(), "Cannot cancel client reservations after confirmation", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Check if reservation time has not started yet
+                if (hasReservationStarted(reservation)) {
+                    Toast.makeText(getContext(), "Cannot cancel: reservation time has already started or passed", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 allowedStatuses = new String[]{"CANCELLED"};
                 break;
             case REFUSED:
@@ -177,20 +255,66 @@ public class AdminOrdersFragment extends Fragment {
             .show();
     }
 
+    private boolean hasReservationStarted(Reservation reservation) {
+        try {
+            // Get current date and time
+            Calendar now = Calendar.getInstance();
+            int currentYear = now.get(Calendar.YEAR);
+            int currentMonth = now.get(Calendar.MONTH) + 1; // Calendar months are 0-based
+            int currentDay = now.get(Calendar.DAY_OF_MONTH);
+            int currentHour = now.get(Calendar.HOUR_OF_DAY);
+
+            // Parse reservation date (format: "YYYY-M-D")
+            String dateStr = reservation.getReservationDate();
+            if (dateStr == null) return true; // If no date, assume started
+
+            String[] dateParts = dateStr.split("-");
+            if (dateParts.length != 3) return true;
+
+            int resYear = Integer.parseInt(dateParts[0]);
+            int resMonth = Integer.parseInt(dateParts[1]);
+            int resDay = Integer.parseInt(dateParts[2]);
+
+            // Parse start time
+            String startTimeStr = reservation.getStartTime();
+            if (startTimeStr == null) return true;
+            int startHour = Integer.parseInt(startTimeStr.replace(":00", ""));
+
+            // Compare dates
+            if (resYear < currentYear) return true;
+            if (resYear > currentYear) return false;
+
+            if (resMonth < currentMonth) return true;
+            if (resMonth > currentMonth) return false;
+
+            if (resDay < currentDay) return true;
+            if (resDay > currentDay) return false;
+
+            // Same day - check if start time has passed
+            return startHour <= currentHour;
+
+        } catch (Exception e) {
+            return true; // If error, assume started (safer)
+        }
+    }
+
     private void updateOrderStatus(Reservation reservation, ReservationStatus newStatus) {
         realm.executeTransaction(r -> {
             reservation.setStatus(newStatus);
         });
 
-        adapter.notifyDataSetChanged();
+        // Reload orders to update the filtered list
+        loadOrders();
         Toast.makeText(getContext(), "Status changed to " + newStatus.name(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+        // Reload orders when returning to fragment
+        if (realm != null && !realm.isClosed()) {
+            markCompletedReservations();
+            loadOrders();
         }
     }
 
