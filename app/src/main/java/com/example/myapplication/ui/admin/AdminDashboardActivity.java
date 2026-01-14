@@ -16,9 +16,9 @@ import io.realm.RealmResults;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
-    private LinearLayout navWorkspaces, navOrders, navProfile;
-    private ImageView imgWorkspaces, imgOrders, imgProfile;
-    private TextView txtWorkspaces, txtOrders, txtProfile;
+    private LinearLayout navWorkspaces, navOrders, navRevenue, navProfile;
+    private ImageView imgWorkspaces, imgOrders, imgRevenue, imgProfile;
+    private TextView txtWorkspaces, txtOrders, txtRevenue, txtProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,14 +28,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         // Initialize Views
         navWorkspaces = findViewById(R.id.nav_workspaces);
         navOrders = findViewById(R.id.nav_orders);
+        navRevenue = findViewById(R.id.nav_revenue);
         navProfile = findViewById(R.id.nav_profile);
 
         imgWorkspaces = findViewById(R.id.img_workspaces);
         imgOrders = findViewById(R.id.img_orders);
+        imgRevenue = findViewById(R.id.img_revenue);
         imgProfile = findViewById(R.id.img_profile);
 
         txtWorkspaces = findViewById(R.id.txt_workspaces);
         txtOrders = findViewById(R.id.txt_orders);
+        txtRevenue = findViewById(R.id.txt_revenue);
         txtProfile = findViewById(R.id.txt_profile);
 
         // Set Click Listeners
@@ -47,9 +50,13 @@ public class AdminDashboardActivity extends AppCompatActivity {
             loadFragment(new AdminOrdersFragment());
             updateNavUI(2);
         });
+        navRevenue.setOnClickListener(v -> {
+            loadFragment(new AdminRevenueFragment());
+            updateNavUI(3);
+        });
         navProfile.setOnClickListener(v -> {
             loadFragment(new AdminProfileFragment());
-            updateNavUI(3);
+            updateNavUI(4);
         });
 
         // Create test data if needed
@@ -72,6 +79,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
         txtWorkspaces.setTextColor(colorUnselected);
         imgOrders.setColorFilter(colorUnselected);
         txtOrders.setTextColor(colorUnselected);
+        imgRevenue.setColorFilter(colorUnselected);
+        txtRevenue.setTextColor(colorUnselected);
         imgProfile.setColorFilter(colorUnselected);
         txtProfile.setTextColor(colorUnselected);
 
@@ -86,6 +95,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 txtOrders.setTextColor(colorSelected);
                 break;
             case 3:
+                imgRevenue.setColorFilter(colorSelected);
+                txtRevenue.setTextColor(colorSelected);
+                break;
+            case 4:
                 imgProfile.setColorFilter(colorSelected);
                 txtProfile.setTextColor(colorSelected);
                 break;

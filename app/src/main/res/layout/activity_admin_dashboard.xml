@@ -99,6 +99,36 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
+        <!-- Revenue -->
+        <LinearLayout
+            android:id="@+id/nav_revenue"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/img_revenue"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_revenue"
+                app:tint="@color/colorGrayText"
+                android:contentDescription="Revenue"/>
+
+            <TextView
+                android:id="@+id/txt_revenue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Revenue"
+                android:textSize="11sp"
+                android:textColor="@color/colorGrayText"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
         <!-- Profile -->
         <LinearLayout
             android:id="@+id/nav_profile"
