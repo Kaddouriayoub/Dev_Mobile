@@ -28,17 +28,31 @@
             android:background="#FAFAFA"
             android:paddingBottom="100dp">
 
-            <!-- IMAGE HEADER (scrolls away) -->
+            <!-- IMAGE CAROUSEL HEADER (scrolls away) -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="260dp">
 
-                <ImageView
-                    android:id="@+id/imgWorkspace"
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/image_carousel_client"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop" />
+                    android:layout_height="match_parent" />
 
+                <!-- Image counter -->
+                <TextView
+                    android:id="@+id/tv_image_counter_client"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/rounded_dark_background"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="1 / 1"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp" />
+
+                <!-- Favorite Button -->
                 <ImageButton
                     android:id="@+id/btnFavorite"
                     android:layout_width="44dp"
@@ -49,7 +63,9 @@
                     android:src="@drawable/heart_selector"
                     android:clickable="true"
                     android:focusable="true" />
+
             </FrameLayout>
+
 
             <!-- CONTENT -->
             <LinearLayout
