@@ -81,7 +81,7 @@ public class WorkspaceDetailsFragment extends Fragment {
         // ===== TEXT =====
         if (w != null) {
             ((TextView) view.findViewById(R.id.txtWorkspaceName)).setText(w.getName());
-            ((TextView) view.findViewById(R.id.txtPrice)).setText(w.getPricePerHour() + " €/h");
+            ((TextView) view.findViewById(R.id.txtPrice)).setText(w.getPricePerHour() + " DHS/h");
             ((TextView) view.findViewById(R.id.txtAddress)).setText(w.getAddress());
             ((TextView) view.findViewById(R.id.txtStatus)).setText(w.getStatus());
             ((TextView) view.findViewById(R.id.txtDescription)).setText(w.getDescription());

@@ -61,7 +61,7 @@ public class UpcomingReservationAdapter extends RecyclerView.Adapter<UpcomingRes
         h.txtDate.setText(r.getReservationDate() != null ? r.getReservationDate() : "");
         h.txtTime.setText((r.getStartTime() != null ? r.getStartTime() : "") + " → " +
                 (r.getEndTime() != null ? r.getEndTime() : ""));
-        h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "€");
+        h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "DH");
 
         // Display real status with colored text only
         ReservationStatus status = r.getStatus();

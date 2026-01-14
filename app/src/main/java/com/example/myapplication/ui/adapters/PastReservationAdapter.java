@@ -58,7 +58,7 @@ public class PastReservationAdapter extends RecyclerView.Adapter<PastReservation
         h.txtDate.setText(r.getReservationDate() != null ? r.getReservationDate() : "");
         h.txtTime.setText((r.getStartTime() != null ? r.getStartTime() : "") + " → " +
                 (r.getEndTime() != null ? r.getEndTime() : ""));
-        h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "€");
+        h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "DH");
 
         // Display real status with colored text only
         // Only COMPLETED and REFUSED should appear in client history
