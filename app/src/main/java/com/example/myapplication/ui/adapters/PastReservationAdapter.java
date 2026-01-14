@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
+import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
 import com.google.android.material.chip.Chip;
 
@@ -58,8 +60,31 @@ public class PastReservationAdapter extends RecyclerView.Adapter<PastReservation
                 (r.getEndTime() != null ? r.getEndTime() : ""));
         h.txtTotal.setText("Total: " + (int) r.getTotalPrice() + "€");
 
-        // You can map your real status here if you want
-        h.chipStatus.setText("Terminé");
+        // Display real status with colored text only
+        // Only COMPLETED and REFUSED should appear in client history
+        ReservationStatus status = r.getStatus();
+        if (status == null) {
+            status = ReservationStatus.COMPLETED;
+        }
+
+        // Set transparent background for all
+        h.chipStatus.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
+
+        switch (status) {
+            case COMPLETED:
+                h.chipStatus.setText("Terminé");
+                h.chipStatus.setTextColor(Color.parseColor("#2196F3")); // Blue
+                break;
+            case REFUSED:
+                h.chipStatus.setText("Refusé");
+                h.chipStatus.setTextColor(Color.parseColor("#F44336")); // Red
+                break;
+            default:
+                // This should never happen for client reservations
+                h.chipStatus.setText(status.name());
+                h.chipStatus.setTextColor(Color.GRAY);
+                break;
+        }
 
         h.itemView.setOnClickListener(v -> listener.onClick(r));
     }

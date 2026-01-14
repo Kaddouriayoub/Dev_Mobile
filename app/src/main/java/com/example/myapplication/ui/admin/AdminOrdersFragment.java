@@ -149,7 +149,21 @@ public class AdminOrdersFragment extends Fragment {
                 allowedStatuses = new String[]{"CONFIRMED", "REFUSED"};
                 break;
             case CONFIRMED:
-                // CONFIRMED can only become CANCELLED
+                // CONFIRMED can only become CANCELLED if:
+                // 1. It's an admin order (isAdminOrder = true)
+                // 2. The reservation time hasn't started yet
+                if (!reservation.isAdminOrder()) {
+                    // Client reservations cannot be cancelled by admin after confirmation
+                    Toast.makeText(getContext(), "Cannot cancel client reservations after confirmation", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Check if reservation time has not started yet
+                if (hasReservationStarted(reservation)) {
+                    Toast.makeText(getContext(), "Cannot cancel: reservation time has already started or passed", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 allowedStatuses = new String[]{"CANCELLED"};
                 break;
             case REFUSED:
@@ -175,6 +189,49 @@ public class AdminOrdersFragment extends Fragment {
             })
             .setNegativeButton("Cancel", null)
             .show();
+    }
+
+    private boolean hasReservationStarted(Reservation reservation) {
+        try {
+            // Get current date and time
+            Calendar now = Calendar.getInstance();
+            int currentYear = now.get(Calendar.YEAR);
+            int currentMonth = now.get(Calendar.MONTH) + 1; // Calendar months are 0-based
+            int currentDay = now.get(Calendar.DAY_OF_MONTH);
+            int currentHour = now.get(Calendar.HOUR_OF_DAY);
+
+            // Parse reservation date (format: "YYYY-M-D")
+            String dateStr = reservation.getReservationDate();
+            if (dateStr == null) return true; // If no date, assume started
+
+            String[] dateParts = dateStr.split("-");
+            if (dateParts.length != 3) return true;
+
+            int resYear = Integer.parseInt(dateParts[0]);
+            int resMonth = Integer.parseInt(dateParts[1]);
+            int resDay = Integer.parseInt(dateParts[2]);
+
+            // Parse start time
+            String startTimeStr = reservation.getStartTime();
+            if (startTimeStr == null) return true;
+            int startHour = Integer.parseInt(startTimeStr.replace(":00", ""));
+
+            // Compare dates
+            if (resYear < currentYear) return true;
+            if (resYear > currentYear) return false;
+
+            if (resMonth < currentMonth) return true;
+            if (resMonth > currentMonth) return false;
+
+            if (resDay < currentDay) return true;
+            if (resDay > currentDay) return false;
+
+            // Same day - check if start time has passed
+            return startHour <= currentHour;
+
+        } catch (Exception e) {
+            return true; // If error, assume started (safer)
+        }
     }
 
     private void updateOrderStatus(Reservation reservation, ReservationStatus newStatus) {
