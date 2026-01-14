@@ -17,6 +17,7 @@ import com.example.myapplication.model.Reservation;
 import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.adapters.OrderAdapter;
+import com.example.myapplication.utils.SessionManager;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
@@ -58,6 +59,10 @@ public class AdminOrdersFragment extends Fragment {
     }
 
     private void markCompletedReservations() {
+        // Get current admin's ID from session
+        SessionManager sessionManager = new SessionManager(getContext());
+        Long currentAdminId = sessionManager.getUserId();
+
         // Get current date and time
         Calendar now = Calendar.getInstance();
         int currentYear = now.get(Calendar.YEAR);
@@ -65,9 +70,10 @@ public class AdminOrdersFragment extends Fragment {
         int currentDay = now.get(Calendar.DAY_OF_MONTH);
         int currentHour = now.get(Calendar.HOUR_OF_DAY);
 
-        // Find all CONFIRMED reservations
+        // Find all CONFIRMED reservations for current admin's workspaces
         RealmResults<Reservation> confirmedReservations = realm.where(Reservation.class)
                 .equalTo("status", ReservationStatus.CONFIRMED.name())
+                .equalTo("workspace.adminId", currentAdminId)
                 .findAll();
 
         realm.executeTransaction(r -> {
@@ -116,7 +122,13 @@ public class AdminOrdersFragment extends Fragment {
     }
 
     private void loadOrders() {
+        // Get current admin's ID from session
+        SessionManager sessionManager = new SessionManager(getContext());
+        Long currentAdminId = sessionManager.getUserId();
+
+        // Filter reservations by workspaces owned by current admin using link query
         RealmResults<Reservation> reservations = realm.where(Reservation.class)
+                .equalTo("workspace.adminId", currentAdminId)
                 .sort("id", Sort.DESCENDING)
                 .findAll();
 
