@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-    <!-- Profile Header / Image -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -50,27 +49,73 @@
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
-    <!-- Details Section -->
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <!-- Email -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="24dp">
+            android:padding="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Loyalty Points"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorGrayText"/>
+                    <TextView
+                        android:id="@+id/tv_loyalty_points"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 pts"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Subscription"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorGrayText"/>
+                    <TextView
+                        android:id="@+id/tv_subscription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Free"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#000000"/>
+                </LinearLayout>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Email Address"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/colorGrayText"/>
-
             <TextView
                 android:id="@+id/tv_email"
                 android:layout_width="match_parent"
@@ -78,23 +123,15 @@
                 android:text="admin@example.com"
                 android:textSize="16sp"
                 android:textColor="#000000"
+                android:layout_marginBottom="24dp"
                 android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <!-- Member Since -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Member Since"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/colorGrayText"/>
-
             <TextView
                 android:id="@+id/tv_created_at"
                 android:layout_width="match_parent"
@@ -102,33 +139,42 @@
                 android:text="January 1, 2024"
                 android:textSize="16sp"
                 android:textColor="#000000"
+                android:layout_marginBottom="24dp"
                 android:layout_marginTop="4dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginBottom="24dp"/>
+
+            <Button
+                android:id="@+id/btn_edit_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Edit Profile"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:textColor="@color/colorPrimary"
+                app:strokeColor="@color/colorPrimary"/>
+
+            <Button
+                android:id="@+id/btn_upgrade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Upgrade Membership"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#FFD700"
+                android:textColor="#000000" />
+
+            <Button
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Log Out"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/colorPrimary"/>
+
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginVertical="16dp"/>
-
-        <!-- Actions -->
-        <Button
-            android:id="@+id/btn_edit_profile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Edit Profile"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:textColor="@color/colorPrimary"
-            app:strokeColor="@color/colorPrimary"/>
-
-        <Button
-            android:id="@+id/btn_logout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Log Out"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/colorPrimary"/>
-
-    </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
