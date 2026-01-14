@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.model.WorkspaceType;
+import com.example.myapplication.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 import android.util.Log;
 import io.realm.Realm;
@@ -339,12 +340,18 @@ public class AddEditWorkspaceFragment extends Fragment {
             return;
         }
 
+        // Get current admin ID
+        SessionManager sessionManager = new SessionManager(getContext());
+        Long currentAdminId = sessionManager.getUserId();
+
         realm.executeTransaction(r -> {
             Workspace workspace;
             if (workspaceId != null) {
                 workspace = r.where(Workspace.class).equalTo("id", workspaceId).findFirst();
             } else {
                 workspace = r.createObject(Workspace.class, System.currentTimeMillis());
+                // Set the adminId for new workspaces
+                workspace.setAdminId(currentAdminId);
             }
 
             if (workspace != null) {
@@ -354,7 +361,6 @@ public class AddEditWorkspaceFragment extends Fragment {
                 workspace.setName(name);
                 workspace.setDescription(description);
                 workspace.setAddress(location);
-                workspace.setCity(location);
                 workspace.setPricePerHour(Double.parseDouble(priceStr));
                 workspace.setCapacity(capacityValue);
 

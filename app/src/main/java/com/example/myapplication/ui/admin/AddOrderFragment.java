@@ -20,6 +20,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
 import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
+import com.example.myapplication.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -106,8 +107,13 @@ public class AddOrderFragment extends Fragment {
     }
 
     private void setupWorkspaceDropdown() {
-        // Only show workspaces with AVAILABLE status (exclude MAINTENANCE)
+        // Get current admin's ID from session
+        SessionManager sessionManager = new SessionManager(getContext());
+        Long currentAdminId = sessionManager.getUserId();
+
+        // Only show workspaces created by current admin with AVAILABLE status
         RealmResults<Workspace> workspaces = realm.where(Workspace.class)
+                .equalTo("adminId", currentAdminId)
                 .equalTo("status", "AVAILABLE")
                 .findAll();
         workspaceList = new ArrayList<>(realm.copyFromRealm(workspaces));

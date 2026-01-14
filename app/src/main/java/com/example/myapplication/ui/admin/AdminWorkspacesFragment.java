@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.adapters.WorkspaceAdapter;
+import com.example.myapplication.utils.SessionManager;
 import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmResults;
@@ -161,7 +162,14 @@ public class AdminWorkspacesFragment extends Fragment {
     }
 
     private void loadWorkspaces() {
-        RealmResults<Workspace> workspaces = realm.where(Workspace.class).findAll();
+        // Get current admin's ID from session
+        SessionManager sessionManager = new SessionManager(getContext());
+        Long currentAdminId = sessionManager.getUserId();
+
+        // Filter workspaces by current admin ID
+        RealmResults<Workspace> workspaces = realm.where(Workspace.class)
+                .equalTo("adminId", currentAdminId)
+                .findAll();
 
         adapter = new WorkspaceAdapter(getContext(), workspaces, new WorkspaceAdapter.OnItemClickListener() {
             @Override
