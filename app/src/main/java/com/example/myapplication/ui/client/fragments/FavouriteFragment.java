@@ -17,6 +17,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.model.Favorite;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.adapters.ClientWorkspaceAdapter;
+import com.example.myapplication.utils.SessionManager;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -25,7 +26,8 @@ public class FavouriteFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private Realm realm;
-    private int currentClientId = 0; // Remplace par l'ID réel du client connecté
+//    private int currentClientId = 0; // Remplace par l'ID réel du client connecté
+    private SessionManager sessionManager;
 
     @Nullable
     @Override
@@ -43,9 +45,10 @@ public class FavouriteFragment extends Fragment {
     }
 
     private void loadFavorites() {
+        sessionManager = new SessionManager(requireContext());
         // 1. Get all favorites for this client
         RealmResults<Favorite> myFavorites = realm.where(Favorite.class)
-                .equalTo("clientId", currentClientId)
+                .equalTo("clientId", sessionManager.getUserId())
                 .sort("createdAt", io.realm.Sort.DESCENDING)
                 .findAll();
 
@@ -105,7 +108,7 @@ public class FavouriteFragment extends Fragment {
                     // Supprimer de la base de données Realm
                     realm.executeTransaction(r -> {
                         Favorite fav = r.where(Favorite.class)
-                                .equalTo("clientId", currentClientId)
+                                .equalTo("clientId", sessionManager.getUserId())
                                 .equalTo("workspaceId", wsId)
                                 .findFirst();
                         if (fav != null) {

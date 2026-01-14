@@ -13,6 +13,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.model.Reservation;
 import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Workspace;
+import com.example.myapplication.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class BookingActivity extends AppCompatActivity {
 
     private static final int OPEN_HOUR = 8;
     private static final int CLOSE_HOUR = 20;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,7 +180,7 @@ public class BookingActivity extends AppCompatActivity {
     /* ---------------- CONFIRM ---------------- */
 
     private void confirmReservation() {
-
+        sessionManager = new SessionManager(this);
         int year = datePicker.getYear();
         int month = datePicker.getMonth() + 1;
         int day = datePicker.getDayOfMonth();
@@ -207,7 +209,7 @@ public class BookingActivity extends AppCompatActivity {
             Workspace ws = r.where(Workspace.class).equalTo("id", workspaceId).findFirst();
             res.setWorkspace(ws);
 
-            res.setClientId(0L);
+            res.setClientId(sessionManager.getUserId());
             res.setReservationDate(dateKey);
             res.setStartTime(String.valueOf(startHour));
             res.setEndTime(String.valueOf(endHour));

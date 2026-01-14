@@ -19,6 +19,7 @@ import com.example.myapplication.model.ReservationStatus;
 import com.example.myapplication.model.Review;
 import com.example.myapplication.ui.adapters.PastReservationAdapter;
 import com.example.myapplication.ui.adapters.UpcomingReservationAdapter;
+import com.example.myapplication.utils.SessionManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ public class ReservationFragment extends Fragment {
     private RecyclerView rvUpcoming, rvPast;
     private TextView txtUpcomingCount, txtPastCount;
     private Realm realm;
-
-    private static final long CLIENT_ID = 0L;
+    private SessionManager sessionManager;
+//    private static final long CLIENT_ID = 0L;
 
     public ReservationFragment() {
         super(R.layout.fragment_reservation);
