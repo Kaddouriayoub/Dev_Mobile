@@ -2,6 +2,7 @@ package com.example.myapplication.ui.client.fragments;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,12 +15,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.model.Favorite;
 import com.example.myapplication.model.Workspace;
+import com.example.myapplication.utils.SessionManager;
 
 import java.io.File;
 import java.util.List;
@@ -161,11 +165,68 @@ public class ExploreFragment extends Fragment {
             }
 
             // ===== TEXT =====
-            // Map to your fields as you like
-            h.tvLocation.setText(w.getCity() + " • " + w.getAddress());
+            // Fix title: show workspace name + city (not city + address)
+            String workspaceName = w.getName();
+            if (TextUtils.isEmpty(workspaceName)) {
+                workspaceName = "Workspace";
+            }
+            h.tvLocation.setText(workspaceName + " · " + w.getCity());
             h.tvDescription.setText(w.getDescription());
-            h.tvStatus.setText(w.getStatus());
-            h.tvPrice.setText(w.getPricePerHour() + " €/h");
+
+            // ===== STATUS WITH STYLING =====
+            String status = w.getStatus();
+            h.tvStatus.setText(status);
+            h.tvStatus.setTextColor(Color.WHITE);
+
+            switch (status) {
+                case "AVAILABLE":
+                    h.tvStatus.setBackgroundColor(Color.parseColor("#2E7D32"));
+                    break;
+                case "FULL":
+                    h.tvStatus.setBackgroundColor(Color.parseColor("#C62828"));
+                    break;
+                case "MAINTENANCE":
+                    h.tvStatus.setBackgroundColor(Color.parseColor("#F9A825"));
+                    break;
+                default:
+                    h.tvStatus.setBackgroundColor(Color.GRAY);
+            }
+
+            h.tvPrice.setText(w.getPricePerHour() + " DHS/h");
+
+            // ===== FAVORITE TOGGLE =====
+            SessionManager sessionManager = new SessionManager(h.itemView.getContext());
+            Realm realmInstance = Realm.getDefaultInstance();
+            Favorite existingFav = realmInstance.where(Favorite.class)
+                    .equalTo("clientId", sessionManager.getUserId())
+                    .equalTo("workspaceId", w.getId())
+                    .findFirst();
+
+            h.ivFavorite.setSelected(existingFav != null);
+
+            h.ivFavorite.setOnClickListener(v -> {
+                realmInstance.executeTransaction(r -> {
+                    Favorite existing = r.where(Favorite.class)
+                            .equalTo("clientId", sessionManager.getUserId())
+                            .equalTo("workspaceId", w.getId())
+                            .findFirst();
+
+                    if (existing != null) {
+                        existing.deleteFromRealm();
+                        h.ivFavorite.setSelected(false);
+                    } else {
+                        Number maxId = r.where(Favorite.class).max("id");
+                        long nextId = (maxId == null) ? 1 : maxId.longValue() + 1;
+
+                        Favorite f = r.createObject(Favorite.class, nextId);
+                        f.setClientId(sessionManager.getUserId());
+                        f.setWorkspaceId(w.getId());
+                        f.setCreatedAt(String.valueOf(System.currentTimeMillis()));
+
+                        h.ivFavorite.setSelected(true);
+                    }
+                });
+            });
 
             // ===== CLICK =====
             h.itemView.setOnClickListener(v -> listener.onClick(w.getId()));
