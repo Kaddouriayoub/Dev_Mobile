@@ -1,4 +1,5 @@
 package com.example.myapplication.ui.client.fragments;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;

@@ -70,6 +70,7 @@ public class FavouriteFragment extends Fragment {
 
         // 4. Pass results to Adapter with Navigation Logic
         ClientWorkspaceAdapter adapter = new ClientWorkspaceAdapter(
+                requireContext(),
                 favoriteWorkspaces,
                 workspaceId -> {
                     // Same logic as ExploreFragment: Navigate to details

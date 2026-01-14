@@ -18,6 +18,7 @@ import com.example.myapplication.model.Reservation;
 import com.example.myapplication.model.Review;
 import com.example.myapplication.ui.adapters.PastReservationAdapter;
 import com.example.myapplication.ui.adapters.UpcomingReservationAdapter;
+import com.example.myapplication.utils.SessionManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.ParseException;
@@ -35,8 +36,9 @@ public class ReservationFragment extends Fragment {
     private RecyclerView rvUpcoming, rvPast;
     private TextView txtUpcomingCount, txtPastCount;
     private Realm realm;
+    private SessionManager sessionManager;
 
-    private static final long CLIENT_ID = 0L;
+//    private static final long CLIENT_ID = 0L;
 
     public ReservationFragment() {
         super(R.layout.fragment_reservation);
@@ -44,6 +46,7 @@ public class ReservationFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        sessionManager = new SessionManager(requireContext());
         super.onViewCreated(view, savedInstanceState);
 
         rvUpcoming = view.findViewById(R.id.rvUpcoming);
@@ -55,10 +58,11 @@ public class ReservationFragment extends Fragment {
         rvPast.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         realm = Realm.getDefaultInstance();
-        loadReservationsFromRealm(CLIENT_ID);
+        loadReservationsFromRealm(sessionManager.getUserId());
     }
 
     private void loadReservationsFromRealm(long clientId) {
+        sessionManager = new SessionManager(requireContext());
         RealmResults<Reservation> results = realm.where(Reservation.class)
                 .equalTo("clientId", clientId)
                 .findAll();
@@ -104,7 +108,7 @@ public class ReservationFragment extends Fragment {
         // createdAt is stored as String -> compare as String (milliseconds)
         Review existing = r.where(Review.class)
                 .equalTo("reservationId", reservation.getId())
-//                .equalTo("clientId", CLIENT_ID)
+                .equalTo("clientId", sessionManager.getUserId())
 //                .equalTo("workspaceId", workspaceId)
 //                .greaterThanOrEqualTo("createdAt", String.valueOf(startMs))
 //                .lessThanOrEqualTo("createdAt", String.valueOf(endMs))
@@ -156,7 +160,7 @@ public class ReservationFragment extends Fragment {
 
             Review review = tx.createObject(Review.class, nextId);
             review.setWorkspaceId(workspaceId);
-            review.setClientId(CLIENT_ID);
+            review.setClientId(sessionManager.getUserId());
             review.setRating(rating);
             review.setComment(comment);
             review.setReservationId(reservationId);
