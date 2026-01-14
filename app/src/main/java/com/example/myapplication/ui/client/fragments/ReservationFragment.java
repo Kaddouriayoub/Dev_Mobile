@@ -43,6 +43,7 @@ public class ReservationFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        sessionManager = new SessionManager(requireContext());
         super.onViewCreated(view, savedInstanceState);
 
         rvUpcoming = view.findViewById(R.id.rvUpcoming);
@@ -58,7 +59,7 @@ public class ReservationFragment extends Fragment {
         // Check and mark completed reservations before loading
         markCompletedReservations();
 
-        loadReservationsFromRealm(CLIENT_ID);
+        loadReservationsFromRealm(sessionManager.getUserId());
     }
 
     private void markCompletedReservations() {
@@ -72,7 +73,7 @@ public class ReservationFragment extends Fragment {
         // Find all CONFIRMED client reservations (not admin orders)
         RealmResults<Reservation> confirmedReservations = realm.where(Reservation.class)
                 .equalTo("status", ReservationStatus.CONFIRMED.name())
-                .equalTo("clientId", CLIENT_ID)
+                .equalTo("clientId", sessionManager.getUserId())
                 .equalTo("isAdminOrder", false)  // Only client's own reservations
                 .findAll();
 
@@ -233,6 +234,7 @@ public class ReservationFragment extends Fragment {
     }
 
     private void saveReview(long workspaceId, int rating, String comment, long reservationId) {
+        sessionManager = new SessionManager(requireContext());
         Realm r = Realm.getDefaultInstance();
 
         r.executeTransaction(tx -> {
@@ -241,7 +243,7 @@ public class ReservationFragment extends Fragment {
 
             Review review = tx.createObject(Review.class, nextId);
             review.setWorkspaceId(workspaceId);
-            review.setClientId(CLIENT_ID);
+            review.setClientId(sessionManager.getUserId());
             review.setRating(rating);
             review.setComment(comment);
             review.setReservationId(reservationId);
@@ -253,11 +255,12 @@ public class ReservationFragment extends Fragment {
 
     @Override
     public void onResume() {
+        sessionManager = new SessionManager(requireContext());
         super.onResume();
         // Reload reservations when returning to this fragment
         if (realm != null && !realm.isClosed()) {
             markCompletedReservations();
-            loadReservationsFromRealm(CLIENT_ID);
+            loadReservationsFromRealm(sessionManager.getUserId());
         }
     }
 
