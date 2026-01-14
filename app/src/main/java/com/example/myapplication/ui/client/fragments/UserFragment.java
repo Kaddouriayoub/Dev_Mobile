@@ -2,6 +2,7 @@ package com.example.myapplication.ui.client.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,10 @@ import com.example.myapplication.ui.admin.EditProfileFragment;
 import com.example.myapplication.ui.client.UpgradeActivity; // Assurez-vous de créer cette classe
 import com.example.myapplication.ui.login.LoginActivity;
 import com.example.myapplication.utils.SessionManager;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import io.realm.Realm;
 
@@ -109,7 +114,14 @@ public class UserFragment extends Fragment {
             tvFullName.setText(user.getFullName());
             tvRole.setText(user.getRole() != null ? user.getRole().name() : "N/A");
             tvEmail.setText(user.getEmail());
-            tvCreatedAt.setText(user.getCreatedAt());
+
+            // Format the date properly
+            String createdAtValue = user.getCreatedAt();
+            if (!TextUtils.isEmpty(createdAtValue)) {
+                tvCreatedAt.setText(formatDate(createdAtValue));
+            } else {
+                tvCreatedAt.setText("N/A");
+            }
         }
 
         // 2. Charger les données Client et gérer la visibilité du bouton Upgrade
@@ -126,6 +138,45 @@ public class UserFragment extends Fragment {
             } else {
                 btnUpgrade.setVisibility(View.VISIBLE); // Affiche le bouton pour les FREE
             }
+        }
+    }
+
+    private String formatDate(String dateValue) {
+        try {
+            // Try to parse as a timestamp (milliseconds since epoch)
+            long timestamp = Long.parseLong(dateValue);
+            Date date = new Date(timestamp);
+            SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
+            return formatter.format(date);
+        } catch (NumberFormatException e) {
+            // If it's not a timestamp, try to parse it as a string date
+            try {
+                // Try common date formats
+                SimpleDateFormat[] formats = {
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH),
+                    new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH),
+                    new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
+                    new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
+                };
+
+                Date date = null;
+                for (SimpleDateFormat format : formats) {
+                    try {
+                        date = format.parse(dateValue);
+                        break;
+                    } catch (Exception ignored) {
+                        // Try next format
+                    }
+                }
+
+                if (date != null) {
+                    SimpleDateFormat outputFormatter = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
+                    return outputFormatter.format(date);
+                }
+            } catch (Exception ignored) {
+                // If all parsing fails, return the original value
+            }
+            return dateValue;
         }
     }
 
