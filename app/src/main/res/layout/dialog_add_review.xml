@@ -13,6 +13,7 @@
         android:numStars="5"
         android:stepSize="1"
         android:rating="5"
+        android:progressTint="@android:color/holo_orange_light"
         android:layout_gravity="center_horizontal"/>
 
     <EditText

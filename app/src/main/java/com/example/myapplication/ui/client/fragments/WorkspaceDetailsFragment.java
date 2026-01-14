@@ -92,9 +92,16 @@ public class WorkspaceDetailsFragment extends Fragment {
                 .equalTo("workspaceId", workspaceId)
                 .findAll();
 
-        RecyclerView rv = view.findViewById(R.id.rvReviews);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rv.setAdapter(new ReviewAdapter(reviews, realm));
+        View commentsCard = view.findViewById(R.id.commentsCard);
+
+        if (reviews == null || reviews.isEmpty()) {
+            commentsCard.setVisibility(View.GONE); // ✅ hide entire card
+        } else {
+            commentsCard.setVisibility(View.VISIBLE);
+            RecyclerView rv = view.findViewById(R.id.rvReviews);
+            rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rv.setAdapter(new ReviewAdapter(reviews, realm));
+        }
 
         // ===== RATING SUMMARY (AVG + BARS) =====
         bindRatingSummary(view, reviews);
