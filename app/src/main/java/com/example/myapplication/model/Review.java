@@ -14,6 +14,8 @@ public class Review extends RealmObject {
     private Client client; // Reference to Client object
     private Long workspaceId;
     private Workspace workspace; // Reference to Workspace object
+    private long reservationId;
+    private Reservation reservation;
 
     public Review() {}
 
@@ -41,4 +43,12 @@ public class Review extends RealmObject {
 
     public Workspace getWorkspace() { return workspace; }
     public void setWorkspace(Workspace workspace) { this.workspace = workspace; }
+
+    public long getReservationId() {return reservationId;}
+
+    public void setReservationId(long reservationId) {this.reservationId = reservationId;}
+
+    public Reservation getReservation() {return reservation;}
+
+    public void setReservation(Reservation reservation) {this.reservation = reservation;}
 }
