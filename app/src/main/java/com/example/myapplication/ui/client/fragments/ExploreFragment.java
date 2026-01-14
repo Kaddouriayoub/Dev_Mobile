@@ -170,7 +170,7 @@ public class ExploreFragment extends Fragment {
             if (TextUtils.isEmpty(workspaceName)) {
                 workspaceName = "Workspace";
             }
-            h.tvLocation.setText(workspaceName + " · " + w.getCity());
+            h.tvLocation.setText(workspaceName /*+ " · " + w.getCity()*/);
             h.tvDescription.setText(w.getDescription());
 
             // ===== STATUS WITH STYLING =====
@@ -245,7 +245,7 @@ public class ExploreFragment extends Fragment {
 
         class VH extends RecyclerView.ViewHolder {
             ImageView ivSpace, ivFavorite;
-            TextView tvLocation, tvDescription, tvStatus, tvPrice;
+            TextView  tvDescription, tvStatus, tvPrice, tvLocation;
 
             VH(@NonNull View itemView) {
                 super(itemView);
