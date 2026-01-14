@@ -7,18 +7,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.model.Favorite;
 import com.example.myapplication.model.Review;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.client.BookingActivity;
+import com.example.myapplication.ui.adapters.ReviewAdapter;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -27,6 +31,8 @@ public class WorkspaceDetailsFragment extends Fragment {
 
     private static final String ARG_ID = "workspace_id";
     private static final long CLIENT_ID = 0L;
+
+    private Realm realm;
 
     public static WorkspaceDetailsFragment newInstance(long workspaceId) {
         Bundle args = new Bundle();
@@ -43,11 +49,12 @@ public class WorkspaceDetailsFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        View view = inflater.inflate(
-                R.layout.fragment_workspace_details, container, false);
+        View view = inflater.inflate(R.layout.fragment_workspace_details, container, false);
 
-        long workspaceId = getArguments().getLong(ARG_ID);
-        Realm realm = Realm.getDefaultInstance();
+        long workspaceId = getArguments() != null ? getArguments().getLong(ARG_ID, -1) : -1;
+        if (workspaceId == -1) return view;
+
+        realm = Realm.getDefaultInstance();
 
         Workspace w = realm.where(Workspace.class)
                 .equalTo("id", workspaceId)
@@ -57,11 +64,21 @@ public class WorkspaceDetailsFragment extends Fragment {
                 .equalTo("workspaceId", workspaceId)
                 .findAll();
 
+        // ====== Rating summary (Google Play style) ======
+        int count = reviews.size();
         float avg = 0f;
-        if (reviews.size() > 0) {
+        int[] dist = new int[5]; // [0]=1-star ... [4]=5-star
+
+        if (count > 0) {
             int sum = 0;
-            for (Review r : reviews) sum += r.getRating();
-            avg = (float) sum / reviews.size();
+            for (Review r : reviews) {
+                int rating = r.getRating();
+                if (rating < 1) rating = 1;
+                if (rating > 5) rating = 5;
+                sum += rating;
+                dist[rating - 1]++;
+            }
+            avg = (float) sum / count;
         }
 
         if (w != null) {
@@ -72,11 +89,36 @@ public class WorkspaceDetailsFragment extends Fragment {
             ((TextView) view.findViewById(R.id.txtDescription)).setText(w.getDescription());
         }
 
-        ((RatingBar) view.findViewById(R.id.ratingBar)).setRating(avg);
+        TextView txtAvg = view.findViewById(R.id.txtAvgRating);
+        TextView txtReviewCount = view.findViewById(R.id.txtReviewCount);
+        RatingBar rbSmall = view.findViewById(R.id.ratingBarSmall);
 
+        txtAvg.setText(String.format(java.util.Locale.getDefault(), "%.1f", avg));
+        txtReviewCount.setText(count + " avis");
+        rbSmall.setRating(avg);
+
+        ProgressBar pb5 = view.findViewById(R.id.pb5);
+        ProgressBar pb4 = view.findViewById(R.id.pb4);
+        ProgressBar pb3 = view.findViewById(R.id.pb3);
+        ProgressBar pb2 = view.findViewById(R.id.pb2);
+        ProgressBar pb1 = view.findViewById(R.id.pb1);
+
+        int max = Math.max(count, 1);
+        pb5.setMax(max); pb5.setProgress(dist[4]);
+        pb4.setMax(max); pb4.setProgress(dist[3]);
+        pb3.setMax(max); pb3.setProgress(dist[2]);
+        pb2.setMax(max); pb2.setProgress(dist[1]);
+        pb1.setMax(max); pb1.setProgress(dist[0]);
+
+        // ====== Reviews list (comments) ======
+        RecyclerView rvReviews = view.findViewById(R.id.rvReviews);
+        rvReviews.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvReviews.setNestedScrollingEnabled(false);
+        rvReviews.setAdapter(new ReviewAdapter(reviews, realm));
+
+        // ====== Favorite toggle ======
         ImageButton btnFavorite = view.findViewById(R.id.btnFavorite);
 
-        // 🔎 Initial favorite state
         Favorite existing = realm.where(Favorite.class)
                 .equalTo("clientId", CLIENT_ID)
                 .equalTo("workspaceId", workspaceId)
@@ -84,10 +126,8 @@ public class WorkspaceDetailsFragment extends Fragment {
 
         btnFavorite.setSelected(existing != null);
 
-        // ❤️ Toggle favorite
         btnFavorite.setOnClickListener(v -> {
             realm.executeTransaction(r -> {
-
                 Favorite fav = r.where(Favorite.class)
                         .equalTo("clientId", CLIENT_ID)
                         .equalTo("workspaceId", workspaceId)
@@ -97,19 +137,19 @@ public class WorkspaceDetailsFragment extends Fragment {
                     fav.deleteFromRealm();
                     btnFavorite.setSelected(false);
                 } else {
-                    Number maxId = r.where(Favorite.class).max("id");
-                    long nextId = (maxId == null) ? 1 : maxId.longValue() + 1;
+                    Number maxIdFav = r.where(Favorite.class).max("id");
+                    long nextId = (maxIdFav == null) ? 1 : maxIdFav.longValue() + 1;
 
                     Favorite f = r.createObject(Favorite.class, nextId);
                     f.setClientId(CLIENT_ID);
                     f.setWorkspaceId(workspaceId);
                     f.setCreatedAt(String.valueOf(System.currentTimeMillis()));
-
                     btnFavorite.setSelected(true);
                 }
             });
         });
 
+        // ====== Reserve ======
         Button btnReserve = view.findViewById(R.id.btnReserve);
         btnReserve.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), BookingActivity.class);
@@ -118,5 +158,11 @@ public class WorkspaceDetailsFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (realm != null && !realm.isClosed()) realm.close();
     }
 }
