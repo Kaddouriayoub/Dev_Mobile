@@ -1,21 +1,27 @@
 package com.example.myapplication.ui.client.fragments;
-
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.model.Workspace;
-import com.example.myapplication.ui.adapters.ClientWorkspaceAdapter;
+
+import java.io.File;
+import java.util.List;
 
 import io.realm.Case;
 import io.realm.Realm;
@@ -38,6 +44,8 @@ public class ExploreFragment extends Fragment {
         recyclerView = view.findViewById(R.id.rvPopularSpaces);
         EditText etSearch = view.findViewById(R.id.etSearch);
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
         realm = Realm.getDefaultInstance();
 
         // Initial load
@@ -46,7 +54,8 @@ public class ExploreFragment extends Fragment {
         // 🔍 Search on ENTER
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH ||
-                    (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                    actionId == EditorInfo.IME_ACTION_DONE ||
+                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
 
                 String query = etSearch.getText().toString().trim();
                 loadWorkspaces(query);
@@ -62,7 +71,7 @@ public class ExploreFragment extends Fragment {
 
         RealmResults<Workspace> results;
 
-        if (query.isEmpty()) {
+        if (TextUtils.isEmpty(query)) {
             results = realm.where(Workspace.class)
                     .equalTo("status", "AVAILABLE")
                     .findAll();
@@ -81,8 +90,9 @@ public class ExploreFragment extends Fragment {
                     .findAll();
         }
 
-        ClientWorkspaceAdapter adapter =
-                new ClientWorkspaceAdapter(results, workspaceId -> {
+        // Adapter that shows ONLY ONE image in the card: the first image of w.getImages()
+        SingleImageWorkspaceAdapter adapter =
+                new SingleImageWorkspaceAdapter(results, workspaceId -> {
 
                     WorkspaceDetailsFragment fragment =
                             WorkspaceDetailsFragment.newInstance(workspaceId);
@@ -101,5 +111,105 @@ public class ExploreFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         if (realm != null) realm.close();
+    }
+
+    // =========================================================
+    // Adapter (ONE IMAGE PER CARD)
+    // =========================================================
+    interface OnWorkspaceClick {
+        void onClick(long workspaceId);
+    }
+
+    class SingleImageWorkspaceAdapter extends RecyclerView.Adapter<SingleImageWorkspaceAdapter.VH> {
+
+        private final RealmResults<Workspace> data;
+        private final OnWorkspaceClick listener;
+
+        SingleImageWorkspaceAdapter(RealmResults<Workspace> data, OnWorkspaceClick listener) {
+            this.data = data;
+            this.listener = listener;
+            setHasStableIds(true);
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            // ⚠️ Put here the layout file that contains your card XML (the one you pasted)
+            // Example names: item_workspace_card, item_workspace_client, item_workspace
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_coworking_space, parent, false);
+            return new VH(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int position) {
+            Workspace w = data.get(position);
+            if (w == null) return;
+
+            // ===== ONE IMAGE TO FILL THE CARD =====
+            // Take the FIRST image from w.getImages()
+            String firstPath = null;
+            List<String> imgs = w.getImages();
+            if (imgs != null && !imgs.isEmpty()) firstPath = imgs.get(0);
+
+            if (!TextUtils.isEmpty(firstPath) && new File(firstPath).exists()) {
+                h.ivSpace.setImageBitmap(decodeScaled(firstPath, 1080, 600));
+            } else {
+                // fallback (keep your sample if you want)
+                h.ivSpace.setImageResource(R.drawable.sample_office);
+            }
+
+            // ===== TEXT =====
+            // Map to your fields as you like
+            h.tvLocation.setText(w.getCity() + " • " + w.getAddress());
+            h.tvDescription.setText(w.getDescription());
+            h.tvStatus.setText(w.getStatus());
+            h.tvPrice.setText(w.getPricePerHour() + " €/h");
+
+            // ===== CLICK =====
+            h.itemView.setOnClickListener(v -> listener.onClick(w.getId()));
+        }
+
+        @Override
+        public int getItemCount() {
+            return data == null ? 0 : data.size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            Workspace w = data.get(position);
+            return (w != null) ? w.getId() : position;
+        }
+
+        class VH extends RecyclerView.ViewHolder {
+            ImageView ivSpace, ivFavorite;
+            TextView tvLocation, tvDescription, tvStatus, tvPrice;
+
+            VH(@NonNull View itemView) {
+                super(itemView);
+                ivSpace = itemView.findViewById(R.id.ivSpace);
+                ivFavorite = itemView.findViewById(R.id.ivFavorite);
+                tvLocation = itemView.findViewById(R.id.tvLocation);
+                tvDescription = itemView.findViewById(R.id.tvDescription);
+                tvStatus = itemView.findViewById(R.id.tvStatus);
+                tvPrice = itemView.findViewById(R.id.tvPrice);
+            }
+        }
+
+        // Decode image with downscaling to avoid OOM
+        private Bitmap decodeScaled(String path, int reqW, int reqH) {
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, o);
+
+            int inSampleSize = 1;
+            while ((o.outWidth / inSampleSize) > reqW || (o.outHeight / inSampleSize) > reqH) {
+                inSampleSize *= 2;
+            }
+
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = inSampleSize;
+            return BitmapFactory.decodeFile(path, o2);
+        }
     }
 }
