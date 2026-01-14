@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,8 +31,12 @@ public class AdminOrdersFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private ImageView btnAdd;
+    private Spinner spinnerFilter;
     private Realm realm;
     private OrderAdapter adapter;
+
+    private String[] filterOptions = {"Tous", "En attente", "Confirmé", "Refusé", "Annulé", "Terminé"};
+    private ReservationStatus currentFilter = null; // null means "ALL"
 
     @Nullable
     @Override
@@ -40,6 +47,7 @@ public class AdminOrdersFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         btnAdd = view.findViewById(R.id.btn_add_order);
+        spinnerFilter = view.findViewById(R.id.spinner_status_filter);
 
         btnAdd.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -53,9 +61,54 @@ public class AdminOrdersFragment extends Fragment {
         // Check and mark completed reservations before loading
         markCompletedReservations();
 
+        // Setup spinner
+        setupFilterSpinner();
+
         loadOrders();
 
         return view;
+    }
+
+    private void setupFilterSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                filterOptions
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFilter.setAdapter(adapter);
+
+        spinnerFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0: // Tous
+                        currentFilter = null;
+                        break;
+                    case 1: // En attente
+                        currentFilter = ReservationStatus.PENDING;
+                        break;
+                    case 2: // Confirmé
+                        currentFilter = ReservationStatus.CONFIRMED;
+                        break;
+                    case 3: // Refusé
+                        currentFilter = ReservationStatus.REFUSED;
+                        break;
+                    case 4: // Annulé
+                        currentFilter = ReservationStatus.CANCELLED;
+                        break;
+                    case 5: // Terminé
+                        currentFilter = ReservationStatus.COMPLETED;
+                        break;
+                }
+                loadOrders();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
     }
 
     private void markCompletedReservations() {
@@ -126,14 +179,25 @@ public class AdminOrdersFragment extends Fragment {
         SessionManager sessionManager = new SessionManager(getContext());
         Long currentAdminId = sessionManager.getUserId();
 
-        // Filter reservations by workspaces owned by current admin using link query
-        RealmResults<Reservation> reservations = realm.where(Reservation.class)
-                .equalTo("workspace.adminId", currentAdminId)
-                .sort("id", Sort.DESCENDING)
-                .findAll();
+        // Build query based on filter
+        RealmResults<Reservation> reservations;
+
+        if (currentFilter == null) {
+            // Show all orders
+            reservations = realm.where(Reservation.class)
+                    .equalTo("workspace.adminId", currentAdminId)
+                    .sort("id", Sort.DESCENDING)
+                    .findAll();
+        } else {
+            // Filter by specific status
+            reservations = realm.where(Reservation.class)
+                    .equalTo("workspace.adminId", currentAdminId)
+                    .equalTo("status", currentFilter.name())
+                    .sort("id", Sort.DESCENDING)
+                    .findAll();
+        }
 
         adapter = new OrderAdapter(getContext(), reservations, this::showStatusChangeDialog);
-
         recyclerView.setAdapter(adapter);
     }
 
@@ -239,15 +303,18 @@ public class AdminOrdersFragment extends Fragment {
             reservation.setStatus(newStatus);
         });
 
-        adapter.notifyDataSetChanged();
+        // Reload orders to update the filtered list
+        loadOrders();
         Toast.makeText(getContext(), "Status changed to " + newStatus.name(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+        // Reload orders when returning to fragment
+        if (realm != null && !realm.isClosed()) {
+            markCompletedReservations();
+            loadOrders();
         }
     }
 
