@@ -50,6 +50,33 @@
                 android:maxLines="1"
                 android:ellipsize="end"/>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="2dp">
+
+                <RatingBar
+                    android:id="@+id/rb_workspace_rating"
+                    style="?android:attr/ratingBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:isIndicator="true"
+                    android:numStars="5"
+                    android:stepSize="0.1"
+                    android:rating="0"/>
+
+                <TextView
+                    android:id="@+id/tv_workspace_rating_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="@color/colorGrayText"
+                    android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/tv_workspace_location"
                 android:layout_width="wrap_content"

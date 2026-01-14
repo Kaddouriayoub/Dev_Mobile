@@ -8,19 +8,26 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.myapplication.R;
+import com.example.myapplication.model.Review;
 import com.example.myapplication.model.Workspace;
 import com.example.myapplication.ui.adapters.ImageCarouselAdapter;
+import com.example.myapplication.ui.adapters.ReviewAdapter;
 
 import io.realm.Realm;
 import io.realm.RealmList;
+import io.realm.RealmResults;
 
 public class AdminWorkspacePreviewFragment extends Fragment {
 
@@ -31,6 +38,12 @@ public class AdminWorkspacePreviewFragment extends Fragment {
     private LinearLayout indicatorContainer;
     private ImageView btnBack;
     private Button btnEdit;
+
+    // Reviews
+    private TextView tvAvgRating, tvReviewCount;
+    private RatingBar ratingBarSmall;
+    private ProgressBar pb5, pb4, pb3, pb2, pb1;
+    private RecyclerView rvReviews;
 
     private Realm realm;
     private Workspace workspace;
@@ -70,6 +83,19 @@ public class AdminWorkspacePreviewFragment extends Fragment {
         tvDescription = view.findViewById(R.id.tv_description);
         btnBack = view.findViewById(R.id.btn_back);
         btnEdit = view.findViewById(R.id.btn_edit);
+
+        // Reviews views
+        tvAvgRating = view.findViewById(R.id.tv_avg_rating);
+        tvReviewCount = view.findViewById(R.id.tv_review_count);
+        ratingBarSmall = view.findViewById(R.id.rating_bar_small);
+        pb5 = view.findViewById(R.id.pb5);
+        pb4 = view.findViewById(R.id.pb4);
+        pb3 = view.findViewById(R.id.pb3);
+        pb2 = view.findViewById(R.id.pb2);
+        pb1 = view.findViewById(R.id.pb1);
+        rvReviews = view.findViewById(R.id.rv_reviews);
+        rvReviews.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvReviews.setNestedScrollingEnabled(false);
 
         // Initialize Realm
         realm = Realm.getDefaultInstance();
@@ -155,6 +181,54 @@ public class AdminWorkspacePreviewFragment extends Fragment {
 
         // Setup image carousel
         setupImageCarousel();
+
+        // Load reviews
+        loadReviews();
+    }
+
+    private void loadReviews() {
+        // Get all reviews for this workspace
+        RealmResults<Review> reviews = realm.where(Review.class)
+                .equalTo("workspaceId", workspaceId)
+                .findAll();
+
+        int count = reviews.size();
+        float avg = 0f;
+        int[] dist = new int[5]; // [0]=1-star ... [4]=5-star
+
+        if (count > 0) {
+            int sum = 0;
+            for (Review r : reviews) {
+                int rating = r.getRating();
+                if (rating < 1) rating = 1;
+                if (rating > 5) rating = 5;
+                sum += rating;
+                dist[rating - 1]++;
+            }
+            avg = (float) sum / count;
+        }
+
+        // Display average rating
+        tvAvgRating.setText(String.format(java.util.Locale.getDefault(), "%.1f", avg));
+        tvReviewCount.setText(count + " avis");
+        ratingBarSmall.setRating(avg);
+
+        // Display distribution bars
+        int max = Math.max(count, 1);
+        pb5.setMax(max);
+        pb5.setProgress(dist[4]);
+        pb4.setMax(max);
+        pb4.setProgress(dist[3]);
+        pb3.setMax(max);
+        pb3.setProgress(dist[2]);
+        pb2.setMax(max);
+        pb2.setProgress(dist[1]);
+        pb1.setMax(max);
+        pb1.setProgress(dist[0]);
+
+        // Display reviews list
+        ReviewAdapter adapter = new ReviewAdapter(reviews, realm);
+        rvReviews.setAdapter(adapter);
     }
 
     private void setupImageCarousel() {
