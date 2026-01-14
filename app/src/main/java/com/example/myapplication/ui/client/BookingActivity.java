@@ -202,6 +202,11 @@ public class BookingActivity extends AppCompatActivity {
 
             Reservation res = r.createObject(Reservation.class, nextId);
             res.setWorkspaceId(workspaceId);
+
+            // Set workspace reference for link queries
+            Workspace ws = r.where(Workspace.class).equalTo("id", workspaceId).findFirst();
+            res.setWorkspace(ws);
+
             res.setClientId(0L);
             res.setReservationDate(dateKey);
             res.setStartTime(String.valueOf(startHour));
