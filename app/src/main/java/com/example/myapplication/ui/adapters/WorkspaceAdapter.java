@@ -9,11 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
+import com.example.myapplication.model.Review;
 import com.example.myapplication.model.Workspace;
+import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmResults;
 import java.io.File;
@@ -25,6 +28,7 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
     private RealmResults<Workspace> workspaces;
     private RealmResults<Workspace> allWorkspaces;
     private OnItemClickListener listener;
+    private Realm realm;
 
     public interface OnItemClickListener {
         void onItemClick(Workspace workspace);
@@ -36,6 +40,7 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
         this.workspaces = workspaces;
         this.allWorkspaces = workspaces;
         this.listener = listener;
+        this.realm = Realm.getDefaultInstance();
     }
 
     public void filter(String query) {
@@ -89,6 +94,30 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
             // Set capacity (total only)
             holder.tvCapacity.setText(workspace.getCapacity() + " places");
             holder.tvCapacity.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
+
+            // Calculate and display rating
+            RealmResults<Review> reviews = realm.where(Review.class)
+                    .equalTo("workspaceId", workspace.getId())
+                    .findAll();
+
+            int reviewCount = reviews.size();
+            float avgRating = 0f;
+
+            if (reviewCount > 0) {
+                int sum = 0;
+                for (Review review : reviews) {
+                    sum += review.getRating();
+                }
+                avgRating = (float) sum / reviewCount;
+            }
+
+            holder.rbRating.setRating(avgRating);
+            if (reviewCount > 0) {
+                holder.tvRatingCount.setText(String.format(java.util.Locale.getDefault(),
+                    "%.1f (%d)", avgRating, reviewCount));
+            } else {
+                holder.tvRatingCount.setText("Pas d'avis");
+            }
 
             // Load first image if available
             RealmList<String> images = workspace.getImages();
@@ -167,7 +196,8 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgWorkspace, btnEdit;
-        TextView tvName, tvLocation, tvPrice, tvStatus, tvCapacity;
+        TextView tvName, tvLocation, tvPrice, tvStatus, tvCapacity, tvRatingCount;
+        RatingBar rbRating;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -178,6 +208,8 @@ public class WorkspaceAdapter extends RecyclerView.Adapter<WorkspaceAdapter.View
             tvPrice = itemView.findViewById(R.id.tv_workspace_price);
             tvStatus = itemView.findViewById(R.id.tv_workspace_status);
             tvCapacity = itemView.findViewById(R.id.tv_workspace_capacity);
+            rbRating = itemView.findViewById(R.id.rb_workspace_rating);
+            tvRatingCount = itemView.findViewById(R.id.tv_workspace_rating_count);
         }
     }
 }

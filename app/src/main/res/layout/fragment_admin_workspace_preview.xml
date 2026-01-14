@@ -216,6 +216,218 @@
                     android:lineSpacingExtra="4dp"
                     android:layout_marginTop="8dp"/>
 
+                <!-- Ratings Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Évaluations et avis"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#222222"
+                    android:layout_marginTop="24dp"/>
+
+                <!-- Rating Summary (Google Play Style) -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_rating_summary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:padding="14dp"
+                    android:background="@drawable/info_card_background">
+
+                    <TextView
+                        android:id="@+id/tv_avg_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0"
+                        android:textSize="44sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <RatingBar
+                        android:id="@+id/rating_bar_small"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:isIndicator="true"
+                        android:numStars="5"
+                        android:stepSize="0.1"
+                        android:rating="0"
+                        app:layout_constraintStart_toStartOf="@id/tv_avg_rating"
+                        app:layout_constraintTop_toBottomOf="@id/tv_avg_rating"
+                        android:layout_marginTop="6dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_review_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 avis"
+                        android:textSize="13sp"
+                        android:textColor="#757575"
+                        app:layout_constraintStart_toStartOf="@id/rating_bar_small"
+                        app:layout_constraintTop_toBottomOf="@id/rating_bar_small"
+                        android:layout_marginTop="6dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/layout_bars"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintStart_toEndOf="@id/tv_avg_rating"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="18dp">
+
+                        <!-- 5 stars -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="5"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb5"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 4 stars -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="4"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb4"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 3 stars -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="3"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb3"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 2 stars -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="2"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb2"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 1 star -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="1"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb1"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Comments List -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Commentaires"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#222222"
+                    android:layout_marginTop="16dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false"/>
+
                 <!-- Edit Button -->
                 <Button
                     android:id="@+id/btn_edit"
