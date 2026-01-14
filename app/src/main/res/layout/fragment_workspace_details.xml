@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:layout_marginTop="20dp">
+    android:background="@color/white">
 
     <!-- Workspace Image -->
     <ImageView
@@ -31,24 +30,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="16dp" />
 
-    <!-- Scrollable Content -->
-    <ScrollView
+    <!-- ONE PAGE SCROLL: info + comments card move together -->
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="140dp"
+        android:overScrollMode="ifContentScrolls"
         app:layout_constraintTop_toBottomOf="@id/imgWorkspace"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp"
-            android:paddingBottom="200dp"
-            android:background="#FAFAFA">
+            android:background="#FAFAFA"
+            android:paddingBottom="220dp">
 
             <!-- Name + Price -->
             <LinearLayout
@@ -163,6 +166,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:layout_marginStart="18dp">
 
+                    <!-- 5 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -188,6 +192,7 @@
                             android:max="1"/>
                     </LinearLayout>
 
+                    <!-- 4 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -213,6 +218,7 @@
                             android:max="1"/>
                     </LinearLayout>
 
+                    <!-- 3 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -238,6 +244,7 @@
                             android:max="1"/>
                     </LinearLayout>
 
+                    <!-- 2 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -263,6 +270,7 @@
                             android:max="1"/>
                     </LinearLayout>
 
+                    <!-- 1 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -286,29 +294,51 @@
                             android:progress="0"
                             android:max="1"/>
                     </LinearLayout>
+
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- COMMENTS SECTION -->
-            <TextView
-                android:id="@+id/txtCommentsTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Commentaires"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#222222"
-                android:layout_marginTop="18dp"
-                android:layout_marginBottom="10dp"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvReviews"
+            <!-- COMMENTS BOX (moves with page; inner list scrolls) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/commentsCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"/>
+                android:layout_height="260dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EAEAEA"
+                android:backgroundTint="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/txtCommentsTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Commentaires"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="#222222"
+                        android:layout_marginBottom="10dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvReviews"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:nestedScrollingEnabled="true"
+                        android:overScrollMode="ifContentScrolls"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- FLOATING RESERVE BUTTON -->
     <com.google.android.material.card.MaterialCardView
