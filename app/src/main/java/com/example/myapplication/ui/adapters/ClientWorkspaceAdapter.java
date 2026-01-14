@@ -68,11 +68,12 @@ public class ClientWorkspaceAdapter
                 workspace.getName() + " · " + workspace.getCity()
         );
         holder.tvDescription.setText(workspace.getDescription());
-        holder.tvPrice.setText(workspace.getPricePerHour() + "€/h");
+        holder.tvPrice.setText(workspace.getPricePerHour() + " DHS/h");
 
         // STATUS
         String status = workspace.getStatus();
         holder.tvStatus.setText(status);
+        holder.tvStatus.setTextColor(Color.WHITE);
 
         switch (status) {
             case "AVAILABLE":

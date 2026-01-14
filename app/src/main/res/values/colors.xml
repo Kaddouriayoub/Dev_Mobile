@@ -6,6 +6,39 @@
     <!-- App Theme Colors -->
     <color name="colorPrimary">#3F51B5</color> <!-- Indigo 500 -->
     <color name="colorPrimaryDark">#303F9F</color> <!-- Indigo 700 -->
-    <color name="colorAccent">#FF4081</color> <!-- Pink A200 -->
+    <color name="colorAccent">#6C757D</color> <!-- Gray -->
     <color name="colorGrayText">#757575</color>
+
+    <!-- Material Design 3 Colors -->
+    <color name="md_theme_light_primary">#3F51B5</color>
+    <color name="md_theme_light_secondary">#6C757D</color>
+    <color name="md_theme_light_tertiary">#546E7A</color>
+    <color name="md_theme_light_error">#B3261E</color>
+    <color name="md_theme_light_surface">#FFFBFE</color>
+    <color name="md_theme_light_surfaceDim">#DDD6E0</color>
+    <color name="md_theme_light_surfaceBright">#FFFBFE</color>
+    <color name="md_theme_light_surfaceContainerLowest">#FFFFFF</color>
+    <color name="md_theme_light_surfaceContainerLow">#F7F2FA</color>
+    <color name="md_theme_light_surfaceContainer">#F3EEF7</color>
+    <color name="md_theme_light_surfaceContainerHigh">#EDE9F0</color>
+    <color name="md_theme_light_surfaceContainerHighest">#E8E3EB</color>
+    <color name="md_theme_light_surfaceVariant">#E8E0EC</color>
+    <color name="md_theme_light_onSurfaceVariant">#49454E</color>
+    <color name="md_theme_light_outline">#79747E</color>
+    <color name="md_theme_light_outlineVariant">#CAC7D0</color>
+    <color name="md_theme_dark_primary">#3F51B5</color>
+    <color name="md_theme_dark_secondary">#6C757D</color>
+    <color name="md_theme_dark_tertiary">#546E7A</color>
+    <color name="md_theme_dark_surface">#1C1B1F</color>
+    <color name="md_theme_dark_surfaceDim">#0F0D13</color>
+    <color name="md_theme_dark_surfaceBright">#372F37</color>
+    <color name="md_theme_dark_surfaceContainerLowest">#0F0D13</color>
+    <color name="md_theme_dark_surfaceContainerLow">#1C1B1F</color>
+    <color name="md_theme_dark_surfaceContainer">#211F26</color>
+    <color name="md_theme_dark_surfaceContainerHigh">#2B2930</color>
+    <color name="md_theme_dark_surfaceContainerHighest">#36343B</color>
+    <color name="md_theme_dark_surfaceVariant">#49454E</color>
+    <color name="md_theme_dark_onSurfaceVariant">#CAC7D0</color>
+    <color name="md_theme_dark_outline">#938F99</color>
+    <color name="md_theme_dark_outlineVariant">#49454E</color>
 </resources>
