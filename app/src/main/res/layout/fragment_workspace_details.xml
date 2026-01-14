@@ -6,40 +6,16 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!-- Workspace Image -->
-    <ImageView
-        android:id="@+id/imgWorkspace"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHeight_percent="0.33"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Favorite Button -->
-    <ImageButton
-        android:id="@+id/btnFavorite"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/heart_selector"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintTop_toTopOf="@id/imgWorkspace"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="16dp" />
-
-    <!-- ONE PAGE SCROLL: info + comments card move together -->
+    <!-- ONE PAGE SCROLL -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:clipToPadding="false"
-        android:paddingBottom="140dp"
+        android:paddingBottom="0dp"
         android:overScrollMode="ifContentScrolls"
-        app:layout_constraintTop_toBottomOf="@id/imgWorkspace"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -49,294 +25,327 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp"
             android:background="#FAFAFA"
-            android:paddingBottom="220dp">
+            android:paddingBottom="100dp">
 
-            <!-- Name + Price -->
+            <!-- IMAGE HEADER (scrolls away) -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="260dp">
+
+                <ImageView
+                    android:id="@+id/imgWorkspace"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <ImageButton
+                    android:id="@+id/btnFavorite"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="16dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/heart_selector"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </FrameLayout>
+
+            <!-- CONTENT -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <TextView
-                    android:id="@+id/txtWorkspaceName"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="#222222"/>
-
-                <TextView
-                    android:id="@+id/txtPrice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="#E53935"/>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtAddress"
-                android:layout_marginTop="6dp"
-                android:textSize="15sp"
-                android:textColor="#757575"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <TextView
-                android:id="@+id/txtStatus"
-                android:layout_marginTop="6dp"
-                android:textSize="15sp"
-                android:textColor="#2E7D32"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <TextView
-                android:id="@+id/txtAgent"
-                android:layout_marginTop="14dp"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#333333"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <TextView
-                android:id="@+id/txtDescription"
-                android:layout_marginTop="12dp"
-                android:textSize="15sp"
-                android:textColor="#444444"
-                android:lineSpacingExtra="6dp"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <!-- GOOGLE PLAY STYLE RATING SUMMARY -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/layoutRatingSummary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:padding="14dp"
-                android:background="@android:color/white">
-
-                <TextView
-                    android:id="@+id/txtAvgRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0.0"
-                    android:textSize="44sp"
-                    android:textStyle="bold"
-                    android:textColor="#222222"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-                <RatingBar
-                    android:id="@+id/ratingBarSmall"
-                    style="?android:attr/ratingBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:isIndicator="true"
-                    android:numStars="5"
-                    android:stepSize="0.1"
-                    android:rating="0"
-                    app:layout_constraintStart_toStartOf="@id/txtAvgRating"
-                    app:layout_constraintTop_toBottomOf="@id/txtAvgRating"
-                    android:layout_marginTop="6dp"/>
-
-                <TextView
-                    android:id="@+id/txtReviewCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 avis"
-                    android:textSize="13sp"
-                    android:textColor="#757575"
-                    app:layout_constraintStart_toStartOf="@id/ratingBarSmall"
-                    app:layout_constraintTop_toBottomOf="@id/ratingBarSmall"
-                    android:layout_marginTop="6dp"/>
-
-                <LinearLayout
-                    android:id="@+id/layoutBars"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toEndOf="@id/txtAvgRating"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:layout_marginStart="18dp">
-
-                    <!-- 5 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
-
-                        <TextView
-                            android:layout_width="16dp"
-                            android:layout_height="wrap_content"
-                            android:text="5"
-                            android:textSize="12sp"
-                            android:textColor="#757575"/>
-
-                        <ProgressBar
-                            android:id="@+id/pb5"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:progress="0"
-                            android:max="1"/>
-                    </LinearLayout>
-
-                    <!-- 4 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
-
-                        <TextView
-                            android:layout_width="16dp"
-                            android:layout_height="wrap_content"
-                            android:text="4"
-                            android:textSize="12sp"
-                            android:textColor="#757575"/>
-
-                        <ProgressBar
-                            android:id="@+id/pb4"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:progress="0"
-                            android:max="1"/>
-                    </LinearLayout>
-
-                    <!-- 3 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
-
-                        <TextView
-                            android:layout_width="16dp"
-                            android:layout_height="wrap_content"
-                            android:text="3"
-                            android:textSize="12sp"
-                            android:textColor="#757575"/>
-
-                        <ProgressBar
-                            android:id="@+id/pb3"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:progress="0"
-                            android:max="1"/>
-                    </LinearLayout>
-
-                    <!-- 2 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
-
-                        <TextView
-                            android:layout_width="16dp"
-                            android:layout_height="wrap_content"
-                            android:text="2"
-                            android:textSize="12sp"
-                            android:textColor="#757575"/>
-
-                        <ProgressBar
-                            android:id="@+id/pb2"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:progress="0"
-                            android:max="1"/>
-                    </LinearLayout>
-
-                    <!-- 1 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="16dp"
-                            android:layout_height="wrap_content"
-                            android:text="1"
-                            android:textSize="12sp"
-                            android:textColor="#757575"/>
-
-                        <ProgressBar
-                            android:id="@+id/pb1"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="0dp"
-                            android:layout_height="8dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:progress="0"
-                            android:max="1"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!-- COMMENTS BOX (moves with page; inner list scrolls) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/commentsCard"
-                android:layout_width="match_parent"
-                android:layout_height="265dp"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#EAEAEA"
-                android:backgroundTint="@android:color/white">
-
+                <!-- Name + Price -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="12dp">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
                     <TextView
-                        android:id="@+id/txtCommentsTitle"
+                        android:id="@+id/txtWorkspaceName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222"/>
+
+                    <TextView
+                        android:id="@+id/txtPrice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Commentaires"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:textColor="#222222"
-                        android:layout_marginBottom="10dp"/>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvReviews"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:nestedScrollingEnabled="true"
-                        android:overScrollMode="ifContentScrolls"/>
+                        android:textColor="#E53935"/>
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:id="@+id/txtAddress"
+                    android:layout_marginTop="6dp"
+                    android:textSize="15sp"
+                    android:textColor="#757575"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
+                <TextView
+                    android:id="@+id/txtStatus"
+                    android:layout_marginTop="6dp"
+                    android:textSize="15sp"
+                    android:textColor="#2E7D32"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/txtAgent"
+                    android:layout_marginTop="14dp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/txtDescription"
+                    android:layout_marginTop="12dp"
+                    android:textSize="15sp"
+                    android:textColor="#444444"
+                    android:lineSpacingExtra="6dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <!-- RATING SUMMARY -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layoutRatingSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:padding="14dp"
+                    android:background="@android:color/white">
+
+                    <TextView
+                        android:id="@+id/txtAvgRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0"
+                        android:textSize="44sp"
+                        android:textStyle="bold"
+                        android:textColor="#222222"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <RatingBar
+                        android:id="@+id/ratingBarSmall"
+                        style="?android:attr/ratingBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:isIndicator="true"
+                        android:numStars="5"
+                        android:stepSize="0.1"
+                        app:layout_constraintTop_toBottomOf="@id/txtAvgRating"
+                        app:layout_constraintStart_toStartOf="@id/txtAvgRating"
+                        android:layout_marginTop="6dp"/>
+
+                    <TextView
+                        android:id="@+id/txtReviewCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 avis"
+                        android:textSize="13sp"
+                        android:textColor="#757575"
+                        app:layout_constraintTop_toBottomOf="@id/ratingBarSmall"
+                        app:layout_constraintStart_toStartOf="@id/ratingBarSmall"
+                        android:layout_marginTop="6dp"/>
+                    <LinearLayout
+                        android:id="@+id/layoutBars"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:layout_constraintStart_toEndOf="@id/txtAvgRating"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginStart="18dp">
+
+                        <!-- 5 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="5"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb5"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 4 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="4"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb4"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 3 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="3"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb3"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 2 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="2"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb2"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                        <!-- 1 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="16dp"
+                                android:layout_height="wrap_content"
+                                android:text="1"
+                                android:textSize="12sp"
+                                android:textColor="#757575"/>
+
+                            <ProgressBar
+                                android:id="@+id/pb1"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="8dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:progress="0"
+                                android:max="1"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- COMMENTS (fixed height, inner scroll works) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/commentsCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="265dp"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#EAEAEA"
+                    android:backgroundTint="@android:color/white">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/txtCommentsTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Commentaires"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="#222222"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"/>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvReviews"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:scrollbars="vertical"
+                            android:nestedScrollingEnabled="true"
+                            android:overScrollMode="ifContentScrolls"
+                            app:layout_constraintTop_toBottomOf="@id/txtCommentsTitle"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_marginTop="10dp"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
